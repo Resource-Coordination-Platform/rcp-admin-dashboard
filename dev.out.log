@@ -1,0 +1,17 @@
+
+> rcp-admin-dashboard@0.1.0 dev
+> next dev -p 3000
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 3.2s
+ ○ Compiling /login ...
+ ✓ Compiled /login in 3.2s (607 modules)
+ GET /login 200 in 3540ms
+ ✓ Compiled in 330ms (310 modules)
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 5.2s (1730 modules)
+[?25h
