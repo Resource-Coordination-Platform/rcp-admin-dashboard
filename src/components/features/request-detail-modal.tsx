@@ -61,10 +61,12 @@ export function RequestDetailModal({
   const updateStatus = useUpdateRequestStatus();
   const [showDispatch, setShowDispatch] = useState(false);
 
+  const currentStatus = (request.status ? String(request.status).toLowerCase() : "pending") as RequestStatus;
+
   // The actions offered come from the category's own approval flow, not a
   // fixed map — that is what makes the workflow engine customizable. Anything
   // else here would offer buttons the backend rejects.
-  const nextStatuses = allowedNext(category?.workflow, request.status);
+  const nextStatuses = allowedNext(category?.workflow, currentStatus);
 
   // Dispatch is gated on Approved/In progress by the logistics service
   // (dispatch.assign_task), independently of the category's flow — so a custom
@@ -72,7 +74,7 @@ export function RequestDetailModal({
   // the two it is rather than telling the admin to "approve" a state their
   // flow does not have.
   const canDispatch =
-    request.status === "approved" || request.status === "in_progress";
+    currentStatus === "approved" || currentStatus === "in_progress";
   const flowReaches = reachableFrom(
     initialStatus(category?.workflow),
     category?.workflow?.transitions ?? DEFAULT_TRANSITIONS,
@@ -108,14 +110,18 @@ export function RequestDetailModal({
       onClose={onClose}
       size="lg"
       title="Request details"
-      description={category?.name ?? "Uncategorized"}
+      description={
+        request.disaster_type
+          ? `Disaster: ${request.disaster_type}`
+          : category?.name ?? "Uncategorized"
+      }
       footer={
         <>
           {nextStatuses.length === 0 && (
             <p className="mr-auto text-xs text-muted-foreground">
-              {isTerminal(request.status)
-                ? `“${REQUEST_STATUS_META[request.status].label}” is a final state in this category's flow.`
-                : "This category's approval flow offers no further steps from here."}
+              {isTerminal(request.status as RequestStatus)
+                ? `“${REQUEST_STATUS_META[(request.status?.toLowerCase() as RequestStatus) ?? "pending"]?.label ?? request.status}” is a final state in this flow.`
+                : "No further status steps available."}
             </p>
           )}
           <Button variant="outline" onClick={onClose}>
@@ -130,7 +136,7 @@ export function RequestDetailModal({
               loading={updateStatus.isPending}
               onClick={() => advance(s)}
             >
-              Mark {REQUEST_STATUS_META[s].label}
+              Mark {REQUEST_STATUS_META[s]?.label ?? s}
             </Button>
           ))}
         </>
@@ -138,8 +144,8 @@ export function RequestDetailModal({
     >
       <div className="space-y-5">
         <div className="flex flex-wrap items-center gap-2">
-          <RequestStatusBadge status={request.status} />
-          <UrgencyBadge level={request.urgency} />
+          <RequestStatusBadge status={request.status ?? "pending"} />
+          <UrgencyBadge level={request.urgency ?? "medium"} />
           {request.is_sensitive && (
             <Badge tone="warning">
               <ShieldAlert className="mr-1 h-3.5 w-3.5" />
@@ -158,26 +164,65 @@ export function RequestDetailModal({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Detail
-            icon={Package}
-            label="Quantity needed"
-            value={String(request.quantity_needed)}
-          />
+          {request.disaster_type && (
+            <Detail
+              icon={ShieldAlert}
+              label="Disaster Type"
+              value={request.disaster_type}
+            />
+          )}
+          {request.needs && (
+            <Detail
+              icon={Package}
+              label="Needs"
+              value={
+                Array.isArray(request.needs)
+                  ? request.needs.join(", ")
+                  : String(request.needs)
+              }
+            />
+          )}
+          {request.quantity_needed !== undefined && (
+            <Detail
+              icon={Package}
+              label="Quantity needed"
+              value={String(request.quantity_needed)}
+            />
+          )}
           <Detail
             icon={MapPin}
-            label="Area"
-            value={request.area ?? "Not specified"}
+            label="Location"
+            value={
+              request.area ??
+              (request.latitude && request.longitude
+                ? `${request.latitude.toFixed(4)}, ${request.longitude.toFixed(4)}`
+                : "Not specified")
+            }
           />
+          {request.latitude && request.longitude && (
+            <div className="col-span-2 text-xs">
+              <a
+                href={`https://www.google.com/maps?q=${request.latitude},${request.longitude}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-brand-600 hover:underline"
+              >
+                📍 Open coordinates in Google Maps ({request.latitude.toFixed(4)}, {request.longitude.toFixed(4)})
+              </a>
+            </div>
+          )}
           <Detail
             icon={CalendarClock}
             label="Created"
             value={formatDateTime(request.created_at)}
           />
-          <Detail
-            icon={CalendarClock}
-            label="Verified"
-            value={formatDateTime(request.verified_at)}
-          />
+          {request.verified_at && (
+            <Detail
+              icon={CalendarClock}
+              label="Verified"
+              value={formatDateTime(request.verified_at)}
+            />
+          )}
         </div>
 
         <IntakeAnswers request={request} category={category} />

@@ -64,7 +64,7 @@ export default function LoginPage() {
             <ShieldCheck className="h-6 w-6" />
           </div>
           <div>
-            <p className="font-semibold">Resource Coordination Platform</p>
+            <p className="font-semibold">Sahasra Resource Coordination Platform</p>
             <p className="text-sm text-sidebar-muted">Tenant Admin Console</p>
           </div>
         </div>

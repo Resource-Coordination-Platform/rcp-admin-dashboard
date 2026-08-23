@@ -136,11 +136,11 @@ export function useRequests(status?: RequestStatus) {
   return useQuery({
     queryKey: qk.requests(status),
     queryFn: () =>
-      api.get<HelpRequestRead[]>("/api/requests", {
-        query: { status_filter: status, limit: 200 },
-      }),
+      api.get<HelpRequestRead[]>("/api/volunteer/requests/pending"),
   });
 }
+
+export const usePendingRequests = useRequests;
 
 export function useUpdateRequestStatus() {
   const qc = useQueryClient();

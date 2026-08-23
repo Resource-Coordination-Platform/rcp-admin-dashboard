@@ -57,20 +57,46 @@ export default function RequestsPage() {
   const rows = useMemo(() => {
     const list = data ?? [];
     const q = search.trim().toLowerCase();
+    const statusFiltered =
+      filter === "all"
+        ? list
+        : list.filter(
+            (r) => (r.status ? String(r.status).toLowerCase() : "pending") === filter,
+          );
     const filtered = q
-      ? list.filter(
-          (r) =>
-            r.description.toLowerCase().includes(q) ||
-            r.area?.toLowerCase().includes(q) ||
-            categoryName(r.category_id).toLowerCase().includes(q),
-        )
-      : list;
-    return [...filtered].sort(
-      (a, b) =>
-        URGENCY_META[b.urgency].rank - URGENCY_META[a.urgency].rank ||
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-    );
-  }, [data, search, categoryName]);
+      ? statusFiltered.filter((r) => {
+          const desc = r.description?.toLowerCase() ?? "";
+          const area = r.area?.toLowerCase() ?? "";
+          const disaster = r.disaster_type?.toLowerCase() ?? "";
+          const cat = r.category_id ? categoryName(r.category_id).toLowerCase() : "";
+          const needsStr = Array.isArray(r.needs)
+            ? r.needs.join(" ").toLowerCase()
+            : (typeof r.needs === "string" ? r.needs.toLowerCase() : "");
+          return (
+            desc.includes(q) ||
+            area.includes(q) ||
+            disaster.includes(q) ||
+            cat.includes(q) ||
+            needsStr.includes(q)
+          );
+        })
+      : statusFiltered;
+
+    return [...filtered].sort((a, b) => {
+      const urgA =
+        a.urgency && URGENCY_META[a.urgency.toLowerCase() as keyof typeof URGENCY_META]
+          ? URGENCY_META[a.urgency.toLowerCase() as keyof typeof URGENCY_META].rank
+          : 1;
+      const urgB =
+        b.urgency && URGENCY_META[b.urgency.toLowerCase() as keyof typeof URGENCY_META]
+          ? URGENCY_META[b.urgency.toLowerCase() as keyof typeof URGENCY_META].rank
+          : 1;
+      return (
+        urgB - urgA ||
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    });
+  }, [data, search, filter, categoryName]);
 
   return (
     <div>
@@ -134,7 +160,7 @@ export default function RequestsPage() {
           <Table>
             <THead>
               <TH>Request</TH>
-              <TH>Category</TH>
+              <TH>Disaster / Category</TH>
               <TH>Urgency</TH>
               <TH>Status</TH>
               <TH className="text-right">Created</TH>
@@ -152,17 +178,25 @@ export default function RequestsPage() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {r.area ?? "No area"} · qty {r.quantity_needed}
+                      {r.area ??
+                        (r.latitude && r.longitude
+                          ? `${r.latitude.toFixed(3)}, ${r.longitude.toFixed(3)}`
+                          : "No area")}
+                      {r.quantity_needed
+                        ? ` · qty ${r.quantity_needed}`
+                        : r.needs
+                          ? ` · ${Array.isArray(r.needs) ? r.needs.join(", ") : r.needs}`
+                          : ""}
                     </p>
                   </TD>
                   <TD className="text-slate-600">
-                    {categoryName(r.category_id)}
+                    {r.disaster_type || (r.category_id ? categoryName(r.category_id) : "General")}
                   </TD>
                   <TD>
-                    <UrgencyBadge level={r.urgency} />
+                    <UrgencyBadge level={r.urgency ?? "medium"} />
                   </TD>
                   <TD>
-                    <RequestStatusBadge status={r.status} />
+                    <RequestStatusBadge status={r.status ?? "pending"} />
                   </TD>
                   <TD className="text-right">
                     <span
@@ -182,7 +216,7 @@ export default function RequestsPage() {
       {selected && (
         <RequestDetailModal
           request={selected}
-          category={categoryById(selected.category_id)}
+          category={selected.category_id ? categoryById(selected.category_id) : undefined}
           onClose={() => setSelected(null)}
           onChanged={(updated) => setSelected(updated)}
         />

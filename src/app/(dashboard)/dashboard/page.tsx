@@ -275,14 +275,22 @@ export default function OverviewPage() {
                         {r.description}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {r.area ?? "No area"} · qty {r.quantity_needed}
+                        {r.area ??
+                          (r.latitude && r.longitude
+                            ? `${r.latitude.toFixed(3)}, ${r.longitude.toFixed(3)}`
+                            : "No area")}
+                        {r.quantity_needed
+                          ? ` · qty ${r.quantity_needed}`
+                          : r.needs
+                            ? ` · ${Array.isArray(r.needs) ? r.needs.join(", ") : r.needs}`
+                            : ""}
                       </p>
                     </TD>
                     <TD>
-                      <UrgencyBadge level={r.urgency} />
+                      <UrgencyBadge level={r.urgency ?? "medium"} />
                     </TD>
                     <TD>
-                      <RequestStatusBadge status={r.status} />
+                      <RequestStatusBadge status={r.status ?? "pending"} />
                     </TD>
                     <TD className="text-right text-xs text-muted-foreground">
                       {relativeTime(r.created_at)}

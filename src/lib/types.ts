@@ -85,29 +85,41 @@ export type UrgencyLevel = "low" | "medium" | "high" | "critical";
 
 export interface HelpRequestRead {
   id: string;
-  tenant_id: string;
-  category_id: string;
+  victim_id?: string;
+  tenant_id?: string;
+  category_id?: string;
+  disaster_type?: string;
+  needs?: string | string[];
   description: string;
-  quantity_needed: number;
-  urgency: UrgencyLevel;
-  status: RequestStatus;
+  quantity_needed?: number;
+  urgency?: UrgencyLevel;
+  status: RequestStatus | string;
   /** Answers to the category's admin-defined intake form, keyed by field key. */
-  extra_fields: Record<string, unknown> | null;
-  area: string | null;
-  is_sensitive: boolean;
+  extra_fields?: Record<string, unknown> | null;
+  area?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  is_sensitive?: boolean;
   created_at: string;
-  verified_at: string | null;
-  fulfilled_at: string | null;
+  verified_at?: string | null;
+  fulfilled_at?: string | null;
 }
 
+export type VictimRequestRead = HelpRequestRead;
+
 export interface HelpRequestCreate {
-  category_id: string;
+  category_id?: string;
+  victim_id?: string;
+  disaster_type?: string;
+  needs?: string | string[];
   description: string;
   quantity_needed?: number;
   urgency?: UrgencyLevel;
   requester_name?: string | null;
   requester_phone?: string | null;
   area?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   is_sensitive?: boolean;
   extra_fields?: Record<string, unknown> | null;
 }
