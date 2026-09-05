@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -37,7 +38,7 @@ export default function LoginPage() {
       if (err instanceof ApiError) {
         setError(
           err.status === 401
-            ? "Invalid tenant, email or password."
+            ? "Invalid tenant, email or password." 
             : err.detail,
         );
       } else {
@@ -143,7 +144,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="securepass123"
+                placeholder="............"
                 autoComplete="current-password"
                 required
               />
@@ -170,6 +171,7 @@ export default function LoginPage() {
             Portal access is provisioned by your platform operator during tenant
             onboarding.
           </p>
+
         </div>
       </div>
     </div>

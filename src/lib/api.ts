@@ -128,7 +128,7 @@ async function parseError(res: Response): Promise<never> {
     else if (Array.isArray(data?.detail))
       detail = data.detail.map((d: any) => d.msg ?? d).join(", ");
   } catch {
-    /* non-JSON body */
+    
   }
   throw new ApiError(res.status, detail);
 }

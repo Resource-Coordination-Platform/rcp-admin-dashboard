@@ -43,9 +43,6 @@ export const qk = {
 };
 
 // ---- Categories ----
-// `includeInactive` matters: retired categories keep their history but stop
-// accepting requests, and the admin still has to be able to see and reactivate
-// them.
 export function useCategories(includeInactive = false) {
   return useQuery({
     queryKey: qk.categories(includeInactive),

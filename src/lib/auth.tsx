@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     router.replace("/login");
   }, [router]);
-
+ 
   const logout = useCallback(() => {
     forceLogout();
   }, [forceLogout]);

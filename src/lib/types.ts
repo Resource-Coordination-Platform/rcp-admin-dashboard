@@ -91,7 +91,7 @@ export interface HelpRequestRead {
   quantity_needed: number;
   urgency: UrgencyLevel;
   status: RequestStatus;
-  /** Answers to the category's admin-defined intake form, keyed by field key. */
+  // Answers to the category's admin-defined intake form
   extra_fields: Record<string, unknown> | null;
   area: string | null;
   is_sensitive: boolean;
@@ -162,7 +162,7 @@ export interface ResourceCategoryRead {
   description: string | null;
   unit: string;
   form_schema: FormFieldSpec[] | null;
-  /** null means the category runs on the platform default flow. */
+  // null means the category runs on the platform default flow
   workflow: WorkflowDefinition | null;
   is_active: boolean;
 }
