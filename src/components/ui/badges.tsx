@@ -18,8 +18,9 @@ import type {
 } from "@/lib/types";
 import { Badge } from "./primitives";
 
-export function RequestStatusBadge({ status }: { status: RequestStatus }) {
-  const m = REQUEST_STATUS_META[status];
+export function RequestStatusBadge({ status }: { status: RequestStatus | string }) {
+  const norm = (status ? String(status).toLowerCase() : "pending") as RequestStatus;
+  const m = REQUEST_STATUS_META[norm] ?? { label: status || "Pending", tone: "neutral" as const };
   return (
     <Badge tone={m.tone} dot>
       {m.label}
@@ -27,8 +28,9 @@ export function RequestStatusBadge({ status }: { status: RequestStatus }) {
   );
 }
 
-export function UrgencyBadge({ level }: { level: UrgencyLevel }) {
-  const m = URGENCY_META[level];
+export function UrgencyBadge({ level }: { level?: UrgencyLevel | string }) {
+  const norm = (level ? String(level).toLowerCase() : "medium") as UrgencyLevel;
+  const m = URGENCY_META[norm] ?? { label: level || "Medium", tone: "info" as const };
   return <Badge tone={m.tone}>{m.label}</Badge>;
 }
 
