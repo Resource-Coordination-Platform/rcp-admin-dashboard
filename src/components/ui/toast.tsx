@@ -67,7 +67,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       toast({ title, description, variant: "success" }),
     error: (title, description) =>
       toast({ title, description, variant: "error" }),
-    info: (title, description) => toast({ title, description, variant: "info" }),
+    info: (title, description) =>
+      toast({ title, description, variant: "info" }),
   };
 
   return (
@@ -98,7 +99,9 @@ function ToastCard({ toast, onDone }: { toast: Toast; onDone: () => void }) {
       )}
       role="status"
     >
-      <Icon className={cn("mt-0.5 h-5 w-5 shrink-0", ICON_STYLES[toast.variant])} />
+      <Icon
+        className={cn("mt-0.5 h-5 w-5 shrink-0", ICON_STYLES[toast.variant])}
+      />
       <div className="flex-1">
         <p className="text-sm font-semibold">{toast.title}</p>
         {toast.description && (

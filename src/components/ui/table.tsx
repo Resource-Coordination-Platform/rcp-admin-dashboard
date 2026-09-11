@@ -2,7 +2,13 @@
 
 import { cn } from "@/lib/format";
 
-export function Table({ children, className }: { children: React.ReactNode; className?: string }) {
+export function Table({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div className="w-full overflow-x-auto">
       <table className={cn("w-full border-collapse text-sm", className)}>

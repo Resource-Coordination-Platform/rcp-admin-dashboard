@@ -3,15 +3,30 @@
 import { cn } from "@/lib/format";
 import { Skeleton } from "./primitives";
 
-type Accent = "brand" | "emerald" | "amber" | "red" | "sky" | "violet" | "slate";
+type Accent =
+  | "brand"
+  | "emerald"
+  | "amber"
+  | "red"
+  | "sky"
+  | "violet"
+  | "slate";
 
 const ACCENTS: Record<Accent, { bg: string; fg: string; ring: string }> = {
   brand: { bg: "bg-brand-50", fg: "text-brand-600", ring: "ring-brand-100" },
-  emerald: { bg: "bg-emerald-50", fg: "text-emerald-600", ring: "ring-emerald-100" },
+  emerald: {
+    bg: "bg-emerald-50",
+    fg: "text-emerald-600",
+    ring: "ring-emerald-100",
+  },
   amber: { bg: "bg-amber-50", fg: "text-amber-600", ring: "ring-amber-100" },
   red: { bg: "bg-red-50", fg: "text-red-600", ring: "ring-red-100" },
   sky: { bg: "bg-sky-50", fg: "text-sky-600", ring: "ring-sky-100" },
-  violet: { bg: "bg-violet-50", fg: "text-violet-600", ring: "ring-violet-100" },
+  violet: {
+    bg: "bg-violet-50",
+    fg: "text-violet-600",
+    ring: "ring-violet-100",
+  },
   slate: { bg: "bg-slate-100", fg: "text-slate-600", ring: "ring-slate-200" },
 };
 

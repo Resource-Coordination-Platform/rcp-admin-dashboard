@@ -41,7 +41,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, variant = "primary", size = "md", loading, children, disabled, ...props },
+    {
+      className,
+      variant = "primary",
+      size = "md",
+      loading,
+      children,
+      disabled,
+      ...props
+    },
     ref,
   ) => (
     <button
@@ -308,7 +316,10 @@ export function Progress({
   };
   return (
     <div
-      className={cn("h-2 w-full overflow-hidden rounded-full bg-slate-100", className)}
+      className={cn(
+        "h-2 w-full overflow-hidden rounded-full bg-slate-100",
+        className,
+      )}
     >
       <div
         className={cn("h-full rounded-full transition-all", colors[tone])}

@@ -105,10 +105,7 @@ interface RequestOptions {
   signal?: AbortSignal;
 }
 
-function buildUrl(
-  path: string,
-  query?: RequestOptions["query"],
-): string {
+function buildUrl(path: string, query?: RequestOptions["query"]): string {
   const url = new URL(`${API_BASE_URL}${path}`);
   if (query) {
     for (const [k, v] of Object.entries(query)) {
@@ -127,9 +124,7 @@ async function parseError(res: Response): Promise<never> {
     if (typeof data?.detail === "string") detail = data.detail;
     else if (Array.isArray(data?.detail))
       detail = data.detail.map((d: any) => d.msg ?? d).join(", ");
-  } catch {
-    
-  }
+  } catch {}
   throw new ApiError(res.status, detail);
 }
 

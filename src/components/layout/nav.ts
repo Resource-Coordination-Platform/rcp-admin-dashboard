@@ -4,9 +4,9 @@ import {
   LifeBuoy,
   type LucideIcon,
   Radio,
-  // Tags,
-  // Users,
-  // UsersRound,
+  Tags,
+  Users,
+  UsersRound,
 } from "lucide-react";
 
 export interface NavItem {
@@ -35,28 +35,28 @@ export const NAV_ITEMS: NavItem[] = [
     icon: Boxes,
     description: "Stock & reservations",
   },
-  // {
-  //   label: "Categories",
-  //   href: "/categories",
-  //   icon: Tags,
-  //   description: "Resource types",
-  // },
+  {
+    label: "Categories",
+    href: "/categories",
+    icon: Tags,
+    description: "Resource types",
+  },
   {
     label: "Disaster Events",
     href: "/events",
     icon: Radio,
     description: "Declare & broadcast",
   },
-  // {
-  //   label: "Volunteers",
-  //   href: "/volunteers",
-  //   icon: UsersRound,
-  //   description: "Find & dispatch",
-  // },
-  // {
-  //   label: "Team",
-  //   href: "/team",
-  //   icon: Users,
-  //   description: "Coordinators",
-  // },
+  {
+    label: "Volunteers",
+    href: "/volunteers",
+    icon: UsersRound,
+    description: "Find & dispatch",
+  },
+  {
+    label: "Team",
+    href: "/team",
+    icon: Users,
+    description: "Coordinators",
+  },
 ];

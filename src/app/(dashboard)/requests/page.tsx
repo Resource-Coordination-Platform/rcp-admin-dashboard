@@ -2,24 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { Filter, LifeBuoy, Lock, Search } from "lucide-react";
-import {
-  useCategories,
-  useRequests,
-} from "@/lib/hooks";
+import { useCategories, useRequests } from "@/lib/hooks";
 import { URGENCY_META } from "@/lib/constants";
 import type { HelpRequestRead, RequestStatus } from "@/lib/types";
 import { formatDateTime, relativeTime } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
-import {
-  Card,
-  EmptyState,
-  Input,
-  Skeleton,
-} from "@/components/ui/primitives";
-import {
-  RequestStatusBadge,
-  UrgencyBadge,
-} from "@/components/ui/badges";
+import { Card, EmptyState, Input, Skeleton } from "@/components/ui/primitives";
+import { RequestStatusBadge, UrgencyBadge } from "@/components/ui/badges";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { RequestDetailModal } from "@/components/features/request-detail-modal";
 
@@ -43,9 +32,6 @@ export default function RequestsPage() {
   );
   const categories = useCategories(true);
 
-  // Requests can reference a retired category, so the lookup includes inactive
-  // ones — and it resolves the whole category, not just the name: the detail
-  // modal needs its form schema and approval flow.
   const { categoryById, categoryName } = useMemo(() => {
     const map = new Map((categories.data ?? []).map((c) => [c.id, c]));
     return {
@@ -68,7 +54,7 @@ export default function RequestsPage() {
     return [...filtered].sort(
       (a, b) =>
         URGENCY_META[b.urgency].rank - URGENCY_META[a.urgency].rank ||
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }, [data, search, categoryName]);
 
@@ -128,7 +114,7 @@ export default function RequestsPage() {
                   ? "No requests yet"
                   : `No ${filter.replace("_", " ")} requests`
             }
-            description="Requests submitted by victims and coordinators will appear here for triage."
+            description="Requests submitted by victims"
           />
         ) : (
           <Table>

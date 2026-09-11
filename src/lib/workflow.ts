@@ -69,12 +69,16 @@ export function validateWorkflow(workflow: WorkflowDefinition): string[] {
   );
 
   if (sources.length === 0) {
-    return ["Add at least one transition, or switch back to the platform default."];
+    return [
+      "Add at least one transition, or switch back to the platform default.",
+    ];
   }
 
   for (const source of sources) {
     if (isTerminal(source)) {
-      errors.push(`“${label(source)}” is a final state and cannot lead anywhere.`);
+      errors.push(
+        `“${label(source)}” is a final state and cannot lead anywhere.`,
+      );
     }
     if ((transitions[source] ?? []).includes(source)) {
       errors.push(`“${label(source)}” cannot transition to itself.`);

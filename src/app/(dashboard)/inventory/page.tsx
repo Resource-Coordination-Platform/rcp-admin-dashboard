@@ -39,7 +39,9 @@ export default function InventoryPage() {
   const { data, isLoading } = useInventory();
   const categories = useCategories();
   const [addOpen, setAddOpen] = useState(false);
-  const [reserveItem, setReserveItem] = useState<InventoryItemRead | null>(null);
+  const [reserveItem, setReserveItem] = useState<InventoryItemRead | null>(
+    null,
+  );
 
   const categoryName = useMemo(() => {
     const map = new Map((categories.data ?? []).map((c) => [c.id, c.name]));
@@ -164,9 +166,7 @@ export default function InventoryPage() {
                     <Progress
                       className="mt-1.5"
                       value={pct(item.quantity_reserved, item.quantity_total)}
-                      tone={
-                        item.quantity_available === 0 ? "danger" : "brand"
-                      }
+                      tone={item.quantity_available === 0 ? "danger" : "brand"}
                     />
                   </TD>
                   <TD>
@@ -199,10 +199,7 @@ export default function InventoryPage() {
         />
       )}
       {reserveItem && (
-        <ReserveModal
-          item={reserveItem}
-          onClose={() => setReserveItem(null)}
-        />
+        <ReserveModal item={reserveItem} onClose={() => setReserveItem(null)} />
       )}
     </div>
   );
@@ -361,7 +358,11 @@ function ReserveModal({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button loading={reserve.isPending} disabled={!valid} onClick={submit}>
+          <Button
+            loading={reserve.isPending}
+            disabled={!valid}
+            onClick={submit}
+          >
             Reserve
           </Button>
         </>

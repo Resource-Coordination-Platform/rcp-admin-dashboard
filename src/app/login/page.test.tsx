@@ -1,16 +1,16 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import LoginPage from './page';
+import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import LoginPage from "./page";
 
 // use fack router
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   useRouter: () => ({
     replace: vi.fn(),
   }),
 }));
 
 // fack login data
-vi.mock('@/lib/auth', () => ({
+vi.mock("@/lib/auth", () => ({
   useAuth: () => ({
     login: vi.fn(),
     isAuthenticated: false,
@@ -18,14 +18,13 @@ vi.mock('@/lib/auth', () => ({
   }),
 }));
 
-
-describe('LoginPage', () => {
-  it('renders the login page correctly', () => {
+describe("LoginPage", () => {
+  it("renders the login page correctly", () => {
     render(<LoginPage />);
 
-    expect(screen.getByText('Welcome back')).toBeInTheDocument();
+    expect(screen.getByText("Welcome back")).toBeInTheDocument();
 
-    const signInButton = screen.getByRole('button', { name: /sign in/i });
+    const signInButton = screen.getByRole("button", { name: /sign in/i });
     expect(signInButton).toBeInTheDocument();
   });
 });

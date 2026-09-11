@@ -52,11 +52,7 @@ export interface AuthState {
   isLoading: boolean;
   roles: Role[];
   hasRole: (...roles: Role[]) => boolean;
-  login: (
-    tenantSlug: string,
-    email: string,
-    password: string,
-  ) => Promise<void>;
+  login: (tenantSlug: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   updateProfile: (body: ProfileUpdate) => Promise<SessionProfile>;
   changePassword: (body: PasswordChange) => Promise<void>;
@@ -117,11 +113,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setClaims(null);
     setProfile(null);
     if (typeof window !== "undefined") {
-      window.alert("Your account has been disabled. You will be signed out now.");
+      window.alert(
+        "Your account has been disabled. You will be signed out now.",
+      );
     }
     router.replace("/login");
   }, [router]);
- 
+
   const logout = useCallback(() => {
     forceLogout();
   }, [forceLogout]);
@@ -215,8 +213,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         { tenant_slug: tenantSlug, email, password },
         { auth: false },
       );
-      tokenStore.set(pair);  // save tokens in localStorage
-      const decoded = decodeJwt(pair.access_token);  // decode to get roles/id
+      tokenStore.set(pair); // save tokens in localStorage
+      const decoded = decodeJwt(pair.access_token); // decode to get roles/id
       // Ask backend for user info
       const user = await api.get<UserRead>("/api/auth/me");
       const prof = mergeProfile({ tenantSlug, email }, user, tenantSlug);
@@ -259,7 +257,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       updateProfile,
       changePassword,
     };
-  }, [claims, profile, isLoading, login, logout, updateProfile, changePassword]);
+  }, [
+    claims,
+    profile,
+    isLoading,
+    login,
+    logout,
+    updateProfile,
+    changePassword,
+  ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

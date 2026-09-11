@@ -15,7 +15,7 @@ export function ProfileSecurityModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const toast = useToast();
+  const toast = useToast();  // Hook to show toast notifications
   const { profile, updateProfile, changePassword, claims } = useAuth();
 
   const [fullName, setFullName] = useState("");
@@ -37,16 +37,15 @@ export function ProfileSecurityModal({
 
   const email = profile?.email ?? "admin";
   const displayName = profile?.full_name?.trim() || email.split("@")[0];
-  const roleLabel =
-    claims?.roles.includes("tenant_admin")
-      ? "Tenant Admin"
-      : claims?.roles[0] ?? "member";
+  const roleLabel = claims?.roles.includes("tenant_admin")
+    ? "Tenant Admin"
+    : (claims?.roles[0] ?? "member");
 
   async function saveProfile() {
     const trimmedName = fullName.trim();
     const trimmedPhone = phone.trim();
 
-    if (!trimmedName) {
+    if (!trimmedName) {   // This is a validation
       toast.error("Full name required", "Please enter your display name.");
       return;
     }
@@ -57,7 +56,10 @@ export function ProfileSecurityModal({
         full_name: trimmedName,
         phone: trimmedPhone ? trimmedPhone : null,
       });
-      toast.success("Profile updated", "Your name and phone number were saved.");
+      toast.success(
+        "Profile updated",
+        "Your name and phone number were saved.",
+      );
       onClose();
     } catch (err) {
       toast.error(

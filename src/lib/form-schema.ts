@@ -128,7 +128,9 @@ export function validateFormSchema(
         "Field key must be lower snake_case, start with a letter, max 50 characters.",
       );
     } else if (seen.has(key)) {
-      fail(`Duplicate field key “${key}” — already used by field ${seen.get(key)! + 1}.`);
+      fail(
+        `Duplicate field key “${key}” — already used by field ${seen.get(key)! + 1}.`,
+      );
     } else {
       seen.set(key, index);
     }
@@ -145,7 +147,8 @@ export function validateFormSchema(
     if (isNumeric(draft.type)) {
       const min = draft.min.trim();
       const max = draft.max.trim();
-      if (min !== "" && Number.isNaN(Number(min))) fail("Minimum must be a number.");
+      if (min !== "" && Number.isNaN(Number(min)))
+        fail("Minimum must be a number.");
       else if (max !== "" && Number.isNaN(Number(max)))
         fail("Maximum must be a number.");
       else if (min !== "" && max !== "" && Number(min) > Number(max))
@@ -157,7 +160,8 @@ export function validateFormSchema(
       const value = Number(draft.maxLength);
       if (!Number.isInteger(value) || value <= 0)
         fail("Max length must be a positive whole number.");
-      else if (value > cap) fail(`Max length for this type cannot exceed ${cap}.`);
+      else if (value > cap)
+        fail(`Max length for this type cannot exceed ${cap}.`);
     }
   });
 
@@ -168,7 +172,10 @@ export function validateFormSchema(
 }
 
 /** Render a stored answer for display in the request detail panel. */
-export function formatAnswer(spec: FormFieldSpec | undefined, value: unknown): string {
+export function formatAnswer(
+  spec: FormFieldSpec | undefined,
+  value: unknown,
+): string {
   if (value === null || value === undefined || value === "") return "—";
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (Array.isArray(value)) return value.length ? value.join(", ") : "—";

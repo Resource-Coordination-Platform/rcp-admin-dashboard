@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
 import type {
   AdminPasswordReset,
@@ -292,6 +288,10 @@ export function useAdminResetUserPassword() {
     }: {
       userId: string;
       body: AdminPasswordReset;
-    }) => api.post<{ message: string; user_id: string }>(`/api/admin/users/${userId}/reset-password`, body),
+    }) =>
+      api.post<{ message: string; user_id: string }>(
+        `/api/admin/users/${userId}/reset-password`,
+        body,
+      ),
   });
 }

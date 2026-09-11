@@ -81,7 +81,9 @@ export function Sidebar({
                 <Icon
                   className={cn(
                     "h-5 w-5 shrink-0",
-                    active ? "text-white" : "text-slate-400 group-hover:text-white",
+                    active
+                      ? "text-white"
+                      : "text-slate-400 group-hover:text-white",
                   )}
                 />
                 <span className="flex-1">{item.label}</span>
@@ -91,15 +93,18 @@ export function Sidebar({
         </nav>
 
         {/* Footer */}
-        {/* <div className="border-t border-white/5 p-4">
+        {<div className="border-t border-white/5 p-4">
           <div className="rounded-xl bg-white/5 p-3">
             <p className="text-xs font-medium text-white">Need help?</p>
             <p className="mt-0.5 text-[11px] leading-relaxed text-sidebar-muted">
               Review the API docs at{" "}
               <span className="text-brand-300">/docs</span> on each service.
+              <p className="mt-1 text-[11px] leading-relaxed text-sidebar-muted">
+                Only for administrators and developers. 
+              </p>
             </p>
           </div>
-        </div> */}
+        </div>}
       </aside>
     </>
   );

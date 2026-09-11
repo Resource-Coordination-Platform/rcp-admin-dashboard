@@ -1,16 +1,50 @@
 "use client";
 
 import Link from "next/link";
-import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, } from "recharts";
-import { ArrowRight, Boxes, CheckCircle2, LifeBuoy, Package, Radio, TriangleAlert, } from "lucide-react";
-import { useEvents, useInventory, useNeedVsFulfillment, useRequestSummary, useRequests, } from "@/lib/hooks";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import {
+  ArrowRight,
+  Boxes,
+  CheckCircle2,
+  LifeBuoy,
+  Package,
+  Radio,
+  TriangleAlert,
+} from "lucide-react";
+import {
+  useEvents,
+  useInventory,
+  useNeedVsFulfillment,
+  useRequestSummary,
+  useRequests,
+} from "@/lib/hooks";
 import { REQUEST_STATUS_META } from "@/lib/constants";
 import type { RequestStatus } from "@/lib/types";
 import { formatDateTime, relativeTime } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
-import { Card, CardHeader, EmptyState, Skeleton } from "@/components/ui/primitives";
-import { EventStatusBadge, RequestStatusBadge, UrgencyBadge, } from "@/components/ui/badges";
+import {
+  Card,
+  CardHeader,
+  EmptyState,
+  Skeleton,
+} from "@/components/ui/primitives";
+import {
+  EventStatusBadge,
+  RequestStatusBadge,
+  UrgencyBadge,
+} from "@/components/ui/badges";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -43,7 +77,7 @@ export default function OverviewPage() {
   ).length;
   const totalStock = (inventory.data ?? []).reduce(
     (a, i) => a + i.quantity_available,
-    0,
+    0, 
   );
 
   const pieData = (Object.entries(summaryData) as [RequestStatus, number][])
@@ -61,12 +95,12 @@ export default function OverviewPage() {
   }));
 
   const recentRequests = (recent.data ?? []).slice(0, 6);
-    
+
   return (
     <div>
       <PageHeader
         title="Overview"
-        description="A live snapshot of your organization's relief operations."
+        description="The live snapshot of the organization's relief operations."
       />
 
       {/* KPI row */}
@@ -114,7 +148,7 @@ export default function OverviewPage() {
         <Card className="lg:col-span-2">
           <CardHeader
             title="Need vs. available stock"
-            description="Open demand against on-hand inventory, per category."
+            description="Current requests compared to available stock, by category."
           />
           <div className="p-5">
             {needVsFulfillment.isLoading ? (

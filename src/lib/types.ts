@@ -282,7 +282,11 @@ export interface NeedVsFulfillmentRow {
 export type RequestStatusSummary = Partial<Record<RequestStatus, number>>;
 
 // ---- Volunteer service: disaster events ----
-export type EventStatus = "DECLARED" | "BROADCASTING" | "TEAM_FORMED" | "CLOSED";
+export type EventStatus =
+  | "DECLARED"
+  | "BROADCASTING"
+  | "TEAM_FORMED"
+  | "CLOSED";
 export type BroadcastType = "RADIUS_L1" | "RADIUS_L2" | "TARGETED";
 export type RequirementStatus = "OPEN" | "FULFILLED";
 

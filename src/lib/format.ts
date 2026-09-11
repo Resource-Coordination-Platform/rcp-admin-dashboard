@@ -32,10 +32,10 @@ export function relativeTime(input: string | null | undefined): string {
   if (!input) return "—";
   const d = new Date(input);
   if (Number.isNaN(d.getTime())) return "—";
-  const diff =  d.getTime() - Date.now();
+  const diff = d.getTime() - Date.now();
   const abs = Math.abs(diff);
   const mins = Math.round(abs / 60000);
-  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });  // automatically chooses ago or in from current time
+  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" }); // automatically chooses ago or in from current time
   if (mins < 1) return "just now";
   if (mins < 60) return rtf.format(Math.sign(diff) * mins, "minute");
   const hours = Math.round(mins / 60);
@@ -47,9 +47,7 @@ export function relativeTime(input: string | null | undefined): string {
 }
 
 export function humanizeSkill(skill: string): string {
-  return skill
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return skill.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export function initials(name: string): string {

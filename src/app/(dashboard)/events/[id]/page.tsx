@@ -11,11 +11,7 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
-import {
-  useCloseEvent,
-  useEvent,
-  useRebroadcastEvent,
-} from "@/lib/hooks";
+import { useCloseEvent, useEvent, useRebroadcastEvent } from "@/lib/hooks";
 import { BROADCAST_META } from "@/lib/constants";
 import { ApiError } from "@/lib/api";
 import { formatDateTime, humanizeSkill, pct } from "@/lib/format";
@@ -27,10 +23,7 @@ import {
   Progress,
   Skeleton,
 } from "@/components/ui/primitives";
-import {
-  BroadcastBadge,
-  EventStatusBadge,
-} from "@/components/ui/badges";
+import { BroadcastBadge, EventStatusBadge } from "@/components/ui/badges";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 

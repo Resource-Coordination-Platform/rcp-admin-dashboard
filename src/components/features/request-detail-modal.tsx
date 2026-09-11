@@ -32,7 +32,12 @@ import {
 } from "@/lib/workflow";
 import { formatAnswer } from "@/lib/form-schema";
 import { ApiError } from "@/lib/api";
-import { colorFromString, formatDateTime, humanizeSkill, initials } from "@/lib/format";
+import {
+  colorFromString,
+  formatDateTime,
+  humanizeSkill,
+  initials,
+} from "@/lib/format";
 import { Modal } from "@/components/ui/modal";
 import {
   Badge,
@@ -299,7 +304,9 @@ function DispatchPanel({
   // The request's area is the natural starting filter; it matches against
   // the volunteer's city (districts are picked from the dropdown instead).
   const [area, setArea] = useState(request.area ?? "");
-  const [selected, setSelected] = useState<VolunteerDirectoryEntry | null>(null);
+  const [selected, setSelected] = useState<VolunteerDirectoryEntry | null>(
+    null,
+  );
   const [title, setTitle] = useState("");
   const [instructions, setInstructions] = useState("");
 

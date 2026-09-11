@@ -99,23 +99,27 @@ export const INVENTORY_STATUS_META: Record<
   expired: { label: "Expired", tone: "neutral" },
 };
 
-export const TASK_STATUS_META: Record<TaskStatus, { label: string; tone: Tone }> =
-  {
-    assigned: { label: "Assigned", tone: "info" },
-    accepted: { label: "Accepted", tone: "brand" },
-    in_progress: { label: "In progress", tone: "warning" },
-    completed: { label: "Completed", tone: "success" },
-    declined: { label: "Declined", tone: "danger" },
-    cancelled: { label: "Cancelled", tone: "neutral" },
-  };
+export const TASK_STATUS_META: Record<
+  TaskStatus,
+  { label: string; tone: Tone }
+> = {
+  assigned: { label: "Assigned", tone: "info" },
+  accepted: { label: "Accepted", tone: "brand" },
+  in_progress: { label: "In progress", tone: "warning" },
+  completed: { label: "Completed", tone: "success" },
+  declined: { label: "Declined", tone: "danger" },
+  cancelled: { label: "Cancelled", tone: "neutral" },
+};
 
-export const EVENT_STATUS_META: Record<EventStatus, { label: string; tone: Tone }> =
-  {
-    DECLARED: { label: "Declared", tone: "info" },
-    BROADCASTING: { label: "Broadcasting", tone: "warning" },
-    TEAM_FORMED: { label: "Team formed", tone: "success" },
-    CLOSED: { label: "Closed", tone: "neutral" },
-  };
+export const EVENT_STATUS_META: Record<
+  EventStatus,
+  { label: string; tone: Tone }
+> = {
+  DECLARED: { label: "Declared", tone: "info" },
+  BROADCASTING: { label: "Broadcasting", tone: "warning" },
+  TEAM_FORMED: { label: "Team formed", tone: "success" },
+  CLOSED: { label: "Closed", tone: "neutral" },
+};
 
 export const BROADCAST_META: Record<
   BroadcastType,

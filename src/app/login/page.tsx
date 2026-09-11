@@ -1,16 +1,9 @@
 "use client";
 
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  Boxes,
-  LifeBuoy,
-  Radio,
-  ShieldCheck,
-} from "lucide-react";
-import { useAuth } from "@/lib/auth";   // react hook for authentication
+import { ArrowRight, Boxes, LifeBuoy, Radio, ShieldCheck } from "lucide-react";
+import { useAuth } from "@/lib/auth"; // react hook for authentication
 import { ApiError } from "@/lib/api";
 import { Button, Field, Input } from "@/components/ui/primitives";
 
@@ -22,13 +15,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  
+
   useEffect(() => {
     if (!isLoading && isAuthenticated) router.replace("/dashboard");
   }, [isAuthenticated, isLoading, router]);
 
   async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();   // stops the browser refresh
+    e.preventDefault(); // stops the browser refresh
     setError(null);
     setSubmitting(true);
     try {
@@ -38,7 +31,7 @@ export default function LoginPage() {
       if (err instanceof ApiError) {
         setError(
           err.status === 401
-            ? "Invalid tenant, email or password." 
+            ? "Invalid tenant, email or password."
             : err.detail,
         );
       } else {
@@ -171,7 +164,6 @@ export default function LoginPage() {
             Portal access is provisioned by your platform operator during tenant
             onboarding.
           </p>
-
         </div>
       </div>
     </div>
