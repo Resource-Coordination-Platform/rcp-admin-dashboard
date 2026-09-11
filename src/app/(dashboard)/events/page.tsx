@@ -2,14 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import type { Map as LeafletMap, Marker as LeafletMarker, LeafletMouseEvent } from "leaflet";
-import {
-  ArrowRight,
-  MapPin,
-  Plus,
-  Radio,
-  Users,
-} from "lucide-react";
+import type {
+  Map as LeafletMap,
+  Marker as LeafletMarker,
+  LeafletMouseEvent,
+} from "leaflet";
+import { ArrowRight, MapPin, Plus, Radio, Users } from "lucide-react";
 import { useDeclareEvent, useDistricts, useEvents } from "@/lib/hooks";
 import { BROADCAST_META, SRI_LANKA_DISTRICTS } from "@/lib/constants";
 import type { BroadcastType, RequirementCreate } from "@/lib/types";
@@ -17,7 +15,7 @@ import { ApiError } from "@/lib/api";
 import { formatDateTime, humanizeSkill, pct } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
 import {
-  Badge,
+  Badge,  //hello
   Button,
   Card,
   EmptyState,
@@ -40,11 +38,7 @@ const MAP_CONTAINER_STYLE = {
 
 // `leaflet` is dynamically imported in the picker to avoid server-side import
 
-function buildStaticMapUrl(
-  lat: number,
-  lng: number,
-  apiKey?: string,
-) {
+function buildStaticMapUrl(lat: number, lng: number, apiKey?: string) {
   const params = new URLSearchParams({
     center: `${lat},${lng}`,
     zoom: "11",
@@ -107,7 +101,10 @@ export default function EventsPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {(data ?? []).map((e) => {
-            const filled = e.requirements.reduce((a, r) => a + r.filled_count, 0);
+            const filled = e.requirements.reduce(
+              (a, r) => a + r.filled_count,
+              0,
+            );
             const needed = e.requirements.reduce(
               (a, r) => a + r.required_count,
               0,
@@ -118,7 +115,11 @@ export default function EventsPage() {
               : null;
             const staticMapUrl =
               coordinates && mapsApiKey
-                ? buildStaticMapUrl(coordinates.lat, coordinates.lng, mapsApiKey)
+                ? buildStaticMapUrl(
+                    coordinates.lat,
+                    coordinates.lng,
+                    mapsApiKey,
+                  )
                 : null;
             const progress = pct(filled, needed);
             return (
@@ -151,7 +152,8 @@ export default function EventsPage() {
                         />
                       ) : (
                         <div className="px-3 py-2 text-xs text-muted-foreground">
-                          Location pinned at {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
+                          Location pinned at {coordinates.lat.toFixed(5)},{" "}
+                          {coordinates.lng.toFixed(5)}
                         </div>
                       )}
                     </div>
@@ -220,7 +222,8 @@ function DeclareEventModal({ onClose }: { onClose: () => void }) {
   const [sourceDistrict, setSourceDistrict] = useState("Colombo");
   const [latitude, setLatitude] = useState(String(COLOMBO_COORDS.lat));
   const [longitude, setLongitude] = useState(String(COLOMBO_COORDS.lng));
-  const [broadcastType, setBroadcastType] = useState<BroadcastType>("RADIUS_L1");
+  const [broadcastType, setBroadcastType] =
+    useState<BroadcastType>("RADIUS_L1");
   const [targetDistricts, setTargetDistricts] = useState<string[]>([]);
   const [requirements, setRequirements] = useState<RequirementCreate[]>([
     { skill: "", required_count: 1 },
@@ -264,7 +267,10 @@ function DeclareEventModal({ onClose }: { onClose: () => void }) {
       }));
 
     if (cleanedReqs.length === 0) {
-      toast.error("Add at least one requirement", "Each event needs a skill bucket.");
+      toast.error(
+        "Add at least one requirement",
+        "Each event needs a skill bucket.",
+      );
       return;
     }
 
@@ -288,8 +294,7 @@ function DeclareEventModal({ onClose }: { onClose: () => void }) {
         source_district: sourceDistrict,
         ...locationPayload,
         broadcast_type: broadcastType,
-        target_districts:
-          broadcastType === "TARGETED" ? targetDistricts : null,
+        target_districts: broadcastType === "TARGETED" ? targetDistricts : null,
         requirements: cleanedReqs,
       });
       toast.success(
@@ -323,7 +328,11 @@ function DeclareEventModal({ onClose }: { onClose: () => void }) {
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button loading={declare.isPending} disabled={!valid} onClick={submit}>
+          <Button
+            loading={declare.isPending}
+            disabled={!valid}
+            onClick={submit}
+          >
             <Radio className="h-4 w-4" />
             Declare & broadcast
           </Button>
@@ -538,26 +547,31 @@ function EventLocationPicker({
     onDistrictDetectedRef.current = onDistrictDetected;
   }, [onCoordinatesChange, onDistrictDetected]);
 
-  const reverseGeocodeDistrict = useCallback(async (nextLat: number, nextLng: number) => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${nextLat}&lon=${nextLng}&addressdetails=1`,
-      );
-      if (!response.ok) return;
-      const data = (await response.json()) as {
-        address?: {
-          county?: string;
-          state_district?: string;
-          state?: string;
+  const reverseGeocodeDistrict = useCallback(
+    async (nextLat: number, nextLng: number) => {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${nextLat}&lon=${nextLng}&addressdetails=1`,
+        );
+        if (!response.ok) return;
+        const data = (await response.json()) as {
+          address?: {
+            county?: string;
+            state_district?: string;
+            state?: string;
+          };
         };
-      };
-      const detectedDistrict =
-        data.address?.county ?? data.address?.state_district ?? data.address?.state;
-      if (detectedDistrict) onDistrictDetectedRef.current(detectedDistrict);
-    } catch {
-      /* district lookup is optional */
-    }
-  }, []);
+        const detectedDistrict =
+          data.address?.county ??
+          data.address?.state_district ??
+          data.address?.state;
+        if (detectedDistrict) onDistrictDetectedRef.current(detectedDistrict);
+      } catch {
+        /* district lookup is optional */
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
