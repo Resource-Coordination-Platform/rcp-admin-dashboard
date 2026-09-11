@@ -91,15 +91,6 @@ export interface HelpRequestRead {
   disaster_type?: string;
   needs?: string | string[];
   description: string;
-<<<<<<< HEAD
-  quantity_needed: number;
-  urgency: UrgencyLevel;
-  status: RequestStatus;
-  // Answers to the category's admin-defined intake form
-  extra_fields: Record<string, unknown> | null;
-  area: string | null;
-  is_sensitive: boolean;
-=======
   quantity_needed?: number;
   urgency?: UrgencyLevel;
   status: RequestStatus | string;
@@ -109,7 +100,6 @@ export interface HelpRequestRead {
   latitude?: number | null;
   longitude?: number | null;
   is_sensitive?: boolean;
->>>>>>> 813c57b1579daf0ed53a724e111753de77790a6d
   created_at: string;
   verified_at?: string | null;
   fulfilled_at?: string | null;

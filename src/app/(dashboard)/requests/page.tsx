@@ -50,55 +50,20 @@ export default function RequestsPage() {
             (r) => (r.status ? String(r.status).toLowerCase() : "pending") === filter,
           );
     const filtered = q
-<<<<<<< HEAD
-      ? list.filter(
+      ? statusFiltered.filter(
           (r) =>
             r.description.toLowerCase().includes(q) ||
             r.area?.toLowerCase().includes(q) ||
-            categoryName(r.category_id).toLowerCase().includes(q),
+            categoryName(r.category_id ?? "").toLowerCase().includes(q),
         )
-      : list;
+      : statusFiltered;
     return [...filtered].sort(
       (a, b) =>
-        URGENCY_META[b.urgency].rank - URGENCY_META[a.urgency].rank ||
+        URGENCY_META[b.urgency ?? "medium"].rank -
+          URGENCY_META[a.urgency ?? "medium"].rank ||
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-  }, [data, search, categoryName]);
-=======
-      ? statusFiltered.filter((r) => {
-          const desc = r.description?.toLowerCase() ?? "";
-          const area = r.area?.toLowerCase() ?? "";
-          const disaster = r.disaster_type?.toLowerCase() ?? "";
-          const cat = r.category_id ? categoryName(r.category_id).toLowerCase() : "";
-          const needsStr = Array.isArray(r.needs)
-            ? r.needs.join(" ").toLowerCase()
-            : (typeof r.needs === "string" ? r.needs.toLowerCase() : "");
-          return (
-            desc.includes(q) ||
-            area.includes(q) ||
-            disaster.includes(q) ||
-            cat.includes(q) ||
-            needsStr.includes(q)
-          );
-        })
-      : statusFiltered;
-
-    return [...filtered].sort((a, b) => {
-      const urgA =
-        a.urgency && URGENCY_META[a.urgency.toLowerCase() as keyof typeof URGENCY_META]
-          ? URGENCY_META[a.urgency.toLowerCase() as keyof typeof URGENCY_META].rank
-          : 1;
-      const urgB =
-        b.urgency && URGENCY_META[b.urgency.toLowerCase() as keyof typeof URGENCY_META]
-          ? URGENCY_META[b.urgency.toLowerCase() as keyof typeof URGENCY_META].rank
-          : 1;
-      return (
-        urgB - urgA ||
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-    });
-  }, [data, search, filter, categoryName]);
->>>>>>> 813c57b1579daf0ed53a724e111753de77790a6d
+  }, [data, filter, search, categoryName]);
 
   return (
     <div>
