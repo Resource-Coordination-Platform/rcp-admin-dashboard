@@ -41,8 +41,23 @@ export interface TenantRead {
   id: string;
   name: string;
   slug: string;
-  status: string;
+  status: "active" | "suspended" | "disabled" | string;
+  description?: string | null;
   created_at: string;
+  updated_at?: string;
+}
+
+export interface TenantCreate {
+  name: string;
+  slug: string;
+  description?: string;
+  admin_full_name: string;
+  admin_email: string;
+  admin_password: string;
+}
+
+export interface TenantUpdateStatus {
+  status: "active" | "suspended" | "disabled";
 }
 
 export interface UserRead {

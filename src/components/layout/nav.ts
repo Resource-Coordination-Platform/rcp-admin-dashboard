@@ -1,12 +1,15 @@
 import {
   Boxes,
+  Building2,
   LayoutDashboard,
   LifeBuoy,
   type LucideIcon,
+  MapPin,
   Radio,
   Tags,
   Users,
   UsersRound,
+  UserCheck,
 } from "lucide-react";
 
 export interface NavItem {
@@ -22,6 +25,24 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard",
     icon: LayoutDashboard,
     description: "KPIs & activity",
+  },
+  {
+    label: "GIS Map View",
+    href: "/map",
+    icon: MapPin,
+    description: "Spatial command center",
+  },
+  {
+    label: "Tenants",
+    href: "/tenants",
+    icon: Building2,
+    description: "Platform organizations",
+  },
+  {
+    label: "Global Users",
+    href: "/superadmin/users",
+    icon: UserCheck,
+    description: "Cross-tenant security",
   },
   {
     label: "Help Requests",

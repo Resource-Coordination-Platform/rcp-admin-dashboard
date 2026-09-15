@@ -18,12 +18,16 @@ import type {
   ResourceCategoryCreate,
   ResourceCategoryRead,
   ResourceCategoryUpdate,
+  TenantCreate,
+  TenantRead,
+  TenantUpdateStatus,
   UserRead,
   VolunteerDirectoryPage,
   VolunteerDirectoryQuery,
 } from "./types";
 
 export const qk = {
+  tenants: ["tenants"] as const,
   categories: (includeInactive = false) =>
     ["categories", includeInactive ? "with-inactive" : "active"] as const,
   inventory: ["inventory"] as const,
@@ -295,3 +299,36 @@ export function useAdminResetUserPassword() {
       ),
   });
 }
+
+// ---- Tenants (Super Admin) ----
+export function useTenants() {
+  return useQuery({
+    queryKey: qk.tenants,
+    queryFn: () => api.get<TenantRead[]>("/api/admin/tenants"),
+  });
+}
+
+export function useCreateTenant() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: TenantCreate) =>
+      api.post<TenantRead>("/api/admin/tenants", body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.tenants }),
+  });
+}
+
+export function useUpdateTenantStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      tenantId,
+      status,
+    }: {
+      tenantId: string;
+      status: "active" | "suspended" | "disabled";
+    }) =>
+      api.patch<TenantRead>(`/api/admin/tenants/${tenantId}/status`, { status }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.tenants }),
+  });
+}
+
