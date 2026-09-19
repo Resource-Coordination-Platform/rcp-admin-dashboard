@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  Boxes,
   CalendarClock,
   ClipboardList,
   MapPin,
@@ -13,6 +14,8 @@ import {
 } from "lucide-react";
 import {
   useDispatchTask,
+  useInventory,
+  useReserveStock,
   useUpdateRequestStatus,
   useVolunteerDirectory,
   useVolunteerSkills,
@@ -20,6 +23,7 @@ import {
 import { DEFAULT_TRANSITIONS, REQUEST_STATUS_META } from "@/lib/constants";
 import type {
   HelpRequestRead,
+  InventoryItemRead,
   RequestStatus,
   ResourceCategoryRead,
   VolunteerDirectoryEntry,
@@ -65,6 +69,7 @@ export function RequestDetailModal({
   const toast = useToast();
   const updateStatus = useUpdateRequestStatus();
   const [showDispatch, setShowDispatch] = useState(false);
+  const [showStockAllocation, setShowStockAllocation] = useState(false);
 
   const currentStatus = (request.status ? String(request.status).toLowerCase() : "pending") as RequestStatus;
 
@@ -231,6 +236,39 @@ export function RequestDetailModal({
         </div>
 
         <IntakeAnswers request={request} category={category} />
+
+        {/* Stock Allocation */}
+        <div className="rounded-xl border border-border bg-amber-50/40 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                <Boxes className="h-4 w-4 text-amber-600" />
+                Allocate Warehouse Stock
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Match required items with available warehouse inventory & reserve stock.
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant={showStockAllocation ? "outline" : "subtle"}
+              onClick={() => setShowStockAllocation((v) => !v)}
+            >
+              {showStockAllocation ? "Hide" : "Allocate Stock"}
+            </Button>
+          </div>
+
+          {showStockAllocation && (
+            <StockAllocationPanel
+              request={request}
+              category={category}
+              onAllocated={(updated) => {
+                setShowStockAllocation(false);
+                if (updated) onChanged(updated);
+              }}
+            />
+          )}
+        </div>
 
         {/* Dispatch */}
         <div className="rounded-xl border border-border bg-slate-50/60 p-4">
@@ -517,3 +555,116 @@ function DispatchPanel({
     </div>
   );
 }
+
+function StockAllocationPanel({
+  request,
+  category,
+  onAllocated,
+}: {
+  request: HelpRequestRead;
+  category?: ResourceCategoryRead;
+  onAllocated: (updated?: HelpRequestRead) => void;
+}) {
+  const toast = useToast();
+  const inventoryQuery = useInventory();
+  const reserveMutation = useReserveStock();
+  const updateStatus = useUpdateRequestStatus();
+
+  const [selectedItem, setSelectedItem] = useState<InventoryItemRead | null>(null);
+  const [quantity, setQuantity] = useState<number>(request.quantity_needed || 1);
+
+  const items = inventoryQuery.data ?? [];
+  const displayItems = request.category_id
+    ? items.filter((i) => i.category_id === request.category_id)
+    : items;
+
+  async function handleReserve() {
+    if (!selectedItem) return;
+    try {
+      await reserveMutation.mutateAsync({ id: selectedItem.id, quantity });
+      const updatedReq = await updateStatus.mutateAsync({ id: request.id, status: "in_progress" });
+      toast.success("Stock Allocated", `Reserved ${quantity} ${category?.unit || "units"} of "${selectedItem.name}".`);
+      onAllocated(updatedReq);
+    } catch (err) {
+      toast.error("Allocation Failed", "Could not reserve stock.");
+    }
+  }
+
+  return (
+    <div className="mt-4 space-y-4">
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Select Warehouse Inventory Item ({displayItems.length} available)
+        </p>
+        {inventoryQuery.isLoading ? (
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            Loading inventory stock…
+          </p>
+        ) : displayItems.length === 0 ? (
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            No matching warehouse inventory items found.
+          </p>
+        ) : (
+          <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
+            {displayItems.map((item) => {
+              const active = selectedItem?.id === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setSelectedItem(item)}
+                  className={
+                    "flex w-full items-center justify-between rounded-lg border p-2.5 text-left transition " +
+                    (active
+                      ? "border-amber-500 bg-amber-50 ring-1 ring-amber-300"
+                      : "border-border bg-white hover:border-amber-300")
+                  }
+                >
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">
+                      {item.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Location: {item.storage_location || "Central Warehouse"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-bold text-emerald-600">
+                      {item.quantity_available} available
+                    </span>
+                    <p className="text-[10px] text-muted-foreground">
+                      {item.quantity_reserved} reserved
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {selectedItem && (
+        <div className="space-y-3 border-t border-border pt-4">
+          <Field label={`Reserve Quantity (${category?.unit || "units"})`} required>
+            <Input
+              type="number"
+              min={1}
+              max={selectedItem.quantity_available}
+              value={quantity}
+              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+            />
+          </Field>
+          <div className="flex justify-end">
+            <Button
+              loading={reserveMutation.isPending || updateStatus.isPending}
+              onClick={handleReserve}
+            >
+              <Boxes className="h-4 w-4" />
+              Confirm Allocation & Reserve Stock
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+

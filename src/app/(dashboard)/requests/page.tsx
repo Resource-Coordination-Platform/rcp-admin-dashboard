@@ -7,7 +7,7 @@ import { URGENCY_META } from "@/lib/constants";
 import type { HelpRequestRead, RequestStatus } from "@/lib/types";
 import { formatDateTime, relativeTime } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
-import { Card, EmptyState, Input, Skeleton } from "@/components/ui/primitives";
+import { Card, EmptyState, Input, Select, Skeleton } from "@/components/ui/primitives";
 import { RequestStatusBadge, UrgencyBadge } from "@/components/ui/badges";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { RequestDetailModal } from "@/components/features/request-detail-modal";
@@ -24,6 +24,8 @@ const FILTERS: { label: string; value: RequestStatus | "all" }[] = [
 
 export default function RequestsPage() {
   const [filter, setFilter] = useState<RequestStatus | "all">("all");
+  const [urgencyFilter, setUrgencyFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<HelpRequestRead | null>(null);
 
@@ -43,27 +45,33 @@ export default function RequestsPage() {
   const rows = useMemo(() => {
     const list = data ?? [];
     const q = search.trim().toLowerCase();
-    const statusFiltered =
-      filter === "all"
-        ? list
-        : list.filter(
-            (r) => (r.status ? String(r.status).toLowerCase() : "pending") === filter,
-          );
-    const filtered = q
-      ? statusFiltered.filter(
-          (r) =>
-            r.description.toLowerCase().includes(q) ||
-            r.area?.toLowerCase().includes(q) ||
-            categoryName(r.category_id ?? "").toLowerCase().includes(q),
-        )
-      : statusFiltered;
-    return [...filtered].sort(
+
+    return list.filter((r) => {
+      const matchStatus =
+        filter === "all" ||
+        (r.status ? String(r.status).toLowerCase() : "pending") === filter;
+
+      const matchUrgency =
+        urgencyFilter === "all" ||
+        (r.urgency ? String(r.urgency).toLowerCase() : "medium") === urgencyFilter;
+
+      const matchCategory =
+        categoryFilter === "all" || r.category_id === categoryFilter;
+
+      const matchSearch =
+        !q ||
+        r.description.toLowerCase().includes(q) ||
+        r.area?.toLowerCase().includes(q) ||
+        categoryName(r.category_id ?? "").toLowerCase().includes(q);
+
+      return matchStatus && matchUrgency && matchCategory && matchSearch;
+    }).sort(
       (a, b) =>
         URGENCY_META[b.urgency ?? "medium"].rank -
           URGENCY_META[a.urgency ?? "medium"].rank ||
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-  }, [data, filter, search, categoryName]);
+  }, [data, filter, urgencyFilter, categoryFilter, search, categoryName]);
 
   return (
     <div>
@@ -94,14 +102,41 @@ export default function RequestsPage() {
               );
             })}
           </div>
-          <div className="relative w-full sm:w-64">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search requests…"
-              className="pl-9"
-            />
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={urgencyFilter}
+              onChange={(e) => setUrgencyFilter(e.target.value)}
+              className="w-36 text-xs"
+            >
+              <option value="all">All Urgencies</option>
+              <option value="critical">🚨 Critical</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </Select>
+
+            <Select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-40 text-xs"
+            >
+              <option value="all">All Categories</option>
+              {(categories.data ?? []).map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </Select>
+
+            <div className="relative w-full sm:w-56">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search requests…"
+                className="pl-9"
+              />
+            </div>
           </div>
         </div>
 

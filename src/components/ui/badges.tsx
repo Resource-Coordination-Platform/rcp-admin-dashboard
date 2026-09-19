@@ -31,7 +31,19 @@ export function RequestStatusBadge({ status }: { status: RequestStatus | string 
 export function UrgencyBadge({ level }: { level?: UrgencyLevel | string }) {
   const norm = (level ? String(level).toLowerCase() : "medium") as UrgencyLevel;
   const m = URGENCY_META[norm] ?? { label: level || "Medium", tone: "info" as const };
-  return <Badge tone={m.tone}>{m.label}</Badge>;
+  const isCritical = norm === "critical";
+
+  return (
+    <Badge tone={m.tone} className={isCritical ? "font-bold shadow-sm" : ""}>
+      {isCritical && (
+        <span className="relative flex h-2 w-2 mr-1.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+        </span>
+      )}
+      {m.label}
+    </Badge>
+  );
 }
 
 export function InventoryStatusBadge({ status }: { status: InventoryStatus }) {
