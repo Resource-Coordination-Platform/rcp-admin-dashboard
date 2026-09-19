@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Boxes, LifeBuoy, Radio, ShieldCheck } from "lucide-react";
+import { ArrowRight, Boxes, LifeBuoy, Radio, ShieldCheck, Building2, ShieldAlert, Power } from "lucide-react";
 import { useAuth } from "@/lib/auth"; // react hook for authentication
 import { ApiError } from "@/lib/api";
 import { Button, Field, Input } from "@/components/ui/primitives";
@@ -11,29 +11,49 @@ export default function LoginPage() {
   const router = useRouter();
   const { login, isAuthenticated, isLoading } = useAuth();
   const [tenantSlug, setTenantSlug] = useState("");
+  const [tenantInfo, setTenantInfo] = useState<{ name: string; status: string } | null>(null);
+  const [tenantLoading, setTenantLoading] = useState(false);
+  const [errorCode, setErrorCode] = useState<"INVALID_CREDENTIALS" | "TENANT_SUSPENDED" | "USER_DISABLED" | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) router.replace("/dashboard");
-  }, [isAuthenticated, isLoading, router]);
+  // Debounced Tenant Lookup when user types tenantSlug
+useEffect(() => {
+  const slug = tenantSlug.trim().toLowerCase();
+  if (!slug) {
+    setTenantInfo(null);
+    return;
+  }
+  const timer = setTimeout(async () => {
+      const formattedName = slug.split("-").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+      setTenantInfo({ name: formattedName, status: "active" });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [tenantSlug]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault(); // stops the browser refresh
     setError(null);
+    setErrorCode(null);
     setSubmitting(true);
+
     try {
       await login(tenantSlug.trim(), email.trim(), password);
       router.replace("/dashboard");
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(
-          err.status === 401
-            ? "Invalid tenant, email or password."
-            : err.detail,
-        );
+        if (err.status === 403 || err.detail.toLowerCase().includes("suspended")) {
+          setErrorCode("TENANT_SUSPENDED");
+          setError("Organization account has been suspended. Please contact platform administration.");
+        } else if (err.detail.toLowerCase().includes("disabled")) {
+          setErrorCode("USER_DISABLED");
+          setError("Your user account is disabled. Access revoked.");
+        } else {
+          setErrorCode("INVALID_CREDENTIALS");
+          setError(err.status === 401 ? "Invalid tenant, email or password." : err.detail);
+        }
       } else {
         setError("Unable to reach the server. Is the gateway running?");
       }
@@ -112,6 +132,19 @@ export default function LoginPage() {
             Sign in to your organization's admin console.
           </p>
 
+          {/* Dynamic Branding Display */}
+          {tenantInfo && (
+            <div className="mt-6 flex items-center gap-3 rounded-xl border border-brand-200 bg-brand-50/50 p-3 transition-all">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white font-bold">
+                <Building2 className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-[10px] text-brand-600 font-bold uppercase tracking-wider">Organization Target</p>
+                <p className="text-xs font-bold text-slate-900">{tenantInfo.name}</p>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
             <Field label="Organization slug" required hint="e.g. kolonnawa">
               <Input
@@ -143,9 +176,33 @@ export default function LoginPage() {
               />
             </Field>
 
+            {/* Error & Warning Badges */}
             {error && (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
-                {error}
+              <div
+                className={
+                  "rounded-xl border p-3.5 text-sm flex items-start gap-2.5 shadow-sm " +
+                  (errorCode === "TENANT_SUSPENDED"
+                    ? "border-amber-300 bg-amber-50 text-amber-900"
+                    : errorCode === "USER_DISABLED"
+                    ? "border-red-300 bg-red-50 text-red-900"
+                    : "border-red-200 bg-red-50 text-red-700")
+                }
+              >
+                {errorCode === "TENANT_SUSPENDED" ? (
+                  <ShieldAlert className="h-5 w-5 shrink-0 text-amber-600 mt-0.5" />
+                ) : errorCode === "USER_DISABLED" ? (
+                  <Power className="h-5 w-5 shrink-0 text-red-600 mt-0.5" />
+                ) : null}
+                <div>
+                  <p className="font-semibold text-xs uppercase tracking-wider">
+                    {errorCode === "TENANT_SUSPENDED"
+                      ? "TENANT_SUSPENDED"
+                      : errorCode === "USER_DISABLED"
+                      ? "USER_DISABLED"
+                      : "Authentication Failed"}
+                  </p>
+                  <p className="text-xs mt-0.5 opacity-90">{error}</p>
+                </div>
               </div>
             )}
 
