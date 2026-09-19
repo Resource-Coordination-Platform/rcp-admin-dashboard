@@ -228,15 +228,13 @@ export default function InventoryPage() {
                           {item.quantity_available} avail.
                         </span>
                         <span className="text-muted-foreground">
-                          {item.quantity_reserved}/{item.quantity_total} reserved
+                          {item.quantity_reserved}/{item.quantity_total}{" "}
+                          reserved
                         </span>
                       </div>
                       <Progress
                         className="mt-1.5"
-                        value={pct(
-                          item.quantity_reserved,
-                          item.quantity_total,
-                        )}
+                        value={pct(item.quantity_reserved, item.quantity_total)}
                         tone={
                           item.quantity_available === 0
                             ? "danger"
