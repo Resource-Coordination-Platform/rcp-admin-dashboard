@@ -1,6 +1,8 @@
 import {
   Boxes,
   Building2,
+  ClipboardList,
+  FileText,
   LayoutDashboard,
   LifeBuoy,
   type LucideIcon,
@@ -61,6 +63,18 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/categories",
     icon: Tags,
     description: "Resource types",
+  },
+  {
+    label: "Audit Logs",
+    href: "/audit-logs",
+    icon: ClipboardList,
+    description: "Operational trail",
+  },
+  {
+    label: "Reports",
+    href: "/reports",
+    icon: FileText,
+    description: "Need vs fulfillment",
   },
   {
     label: "Disaster Events",
