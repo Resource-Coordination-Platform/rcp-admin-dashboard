@@ -356,7 +356,29 @@ export interface DisasterEventCreate {
   requirements: RequirementCreate[];
 }
 
-export type DistrictMap = Record<string, string[]>;
+export interface DistrictMap {
+  [key: string]: string[];
+}
+
+// ---- Emergency Disaster Alerts (SRS 3.1.5.2 & 3.1.5.3) ----
+export type AlertSeverity = "HIGH" | "MEDIUM" | "LOW";
+
+export interface DisasterAlertRead {
+  id: string;
+  tenant_id?: string;
+  title: string;
+  message: string;
+  severity: AlertSeverity;
+  is_active: boolean;
+  created_by?: string;
+  created_at: string;
+}
+
+export interface DisasterAlertCreate {
+  title: string;
+  message: string;
+  severity: AlertSeverity;
+}
 
 export interface ApiError {
   status: number;

@@ -7,6 +7,7 @@ import {
   LifeBuoy,
   type LucideIcon,
   MapPin,
+  Megaphone,
   Radio,
   Tags,
   Users,
@@ -63,6 +64,12 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/categories",
     icon: Tags,
     description: "Resource types",
+  },
+  {
+    label: "Emergency Alerts",
+    href: "/alerts",
+    icon: Megaphone,
+    description: "Broadcast warnings",
   },
   {
     label: "Audit Logs",

@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
 import type {
   AdminPasswordReset,
+  DisasterAlertCreate,
+  DisasterAlertRead,
   DisasterEventCreate,
   DisasterEventRead,
   DispatchTaskCreate,
@@ -28,6 +30,7 @@ import type {
 
 export const qk = {
   tenants: ["tenants"] as const,
+  alerts: ["alerts"] as const,
   categories: (includeInactive = false) =>
     ["categories", includeInactive ? "with-inactive" : "active"] as const,
   inventory: ["inventory"] as const,
@@ -331,4 +334,22 @@ export function useUpdateTenantStatus() {
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.tenants }),
   });
 }
+
+// ---- Emergency Disaster Alerts (SRS 3.1.5.2 & 3.1.5.3) ----
+export function useAlerts() {
+  return useQuery({
+    queryKey: qk.alerts,
+    queryFn: () => api.get<DisasterAlertRead[]>("/api/alerts"),
+  });
+}
+
+export function useBroadcastAlert() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: DisasterAlertCreate) =>
+      api.post<DisasterAlertRead>("/api/alerts", body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.alerts }),
+  });
+}
+
 
