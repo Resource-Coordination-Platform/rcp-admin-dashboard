@@ -6,8 +6,11 @@ import {
   Boxes,
   CircleCheck,
   Lock,
+  MapPin,
   Package,
   Plus,
+  Search,
+  User,
 } from "lucide-react";
 import {
   useAddInventoryItem,
@@ -21,6 +24,7 @@ import { formatDate, pct } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import {
+  Badge,
   Button,
   Card,
   EmptyState,
@@ -39,6 +43,8 @@ export default function InventoryPage() {
   const { data, isLoading } = useInventory();
   const categories = useCategories();
   const [addOpen, setAddOpen] = useState(false);
+  const [locationFilter, setLocationFilter] = useState("all");
+  const [search, setSearch] = useState("");
   const [reserveItem, setReserveItem] = useState<InventoryItemRead | null>(
     null,
   );
@@ -49,10 +55,38 @@ export default function InventoryPage() {
   }, [categories.data]);
 
   const items = data ?? [];
+
+  // Extract unique locations for location tagging filter
+  const locations = useMemo(() => {
+    const set = new Set<string>();
+    items.forEach((i) => {
+      if (i.storage_location) set.add(i.storage_location);
+    });
+    return Array.from(set);
+  }, [items]);
+
+  const filteredItems = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return items.filter((item) => {
+      const matchLoc =
+        locationFilter === "all" || item.storage_location === locationFilter;
+      const matchSearch =
+        !q ||
+        item.name.toLowerCase().includes(q) ||
+        (item.storage_location &&
+          item.storage_location.toLowerCase().includes(q)) ||
+        categoryName(item.category_id).toLowerCase().includes(q);
+      return matchLoc && matchSearch;
+    });
+  }, [items, locationFilter, search, categoryName]);
+
   const totalAvailable = items.reduce((a, i) => a + i.quantity_available, 0);
   const totalReserved = items.reduce((a, i) => a + i.quantity_reserved, 0);
   const lowOrExpired = items.filter(
-    (i) => i.status === "depleted" || i.status === "expired",
+    (i) =>
+      i.status === "depleted" ||
+      i.status === "expired" ||
+      i.quantity_available <= 10,
   ).length;
 
   const noCategories = (categories.data ?? []).length === 0;
@@ -60,12 +94,12 @@ export default function InventoryPage() {
   return (
     <div>
       <PageHeader
-        title="Inventory"
-        description="Track on-hand stock, reservations and expiries across resource categories."
+        title="Inventory Tracking & Stock Management"
+        description="Warehouse level location tagging, low-stock threshold monitoring, and inbound donor supply intake."
         actions={
           <Button onClick={() => setAddOpen(true)} disabled={noCategories}>
             <Plus className="h-4 w-4" />
-            Add item
+            Inbound Donor Supply Intake
           </Button>
         }
       />
@@ -93,7 +127,7 @@ export default function InventoryPage() {
           loading={isLoading}
         />
         <StatCard
-          label="Depleted / expired"
+          label="Low stock / expired"
           value={lowOrExpired}
           icon={AlertTriangle}
           accent="red"
@@ -105,29 +139,57 @@ export default function InventoryPage() {
         <div className="mb-6 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           <AlertTriangle className="h-5 w-5 shrink-0" />
           <span>
-            Create a resource category first inventory items must belong to a
+            Create a resource category first; inventory items must belong to a
             category.
           </span>
         </div>
       )}
 
       <Card>
+        {/* Toolbar with Location Tagging Filter */}
+        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <Select
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+              className="w-48 text-xs"
+            >
+              <option value="all">All Warehouses / Locations</option>
+              {locations.map((loc) => (
+                <option key={loc} value={loc}>
+                  🏢 {loc}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <div className="relative w-full sm:w-64">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search inventory items…"
+              className="pl-9 text-xs"
+            />
+          </div>
+        </div>
+
         {isLoading ? (
           <div className="space-y-3 p-5">
             {[...Array(6)].map((_, i) => (
               <Skeleton key={i} className="h-14 w-full" />
             ))}
           </div>
-        ) : items.length === 0 ? (
+        ) : filteredItems.length === 0 ? (
           <EmptyState
             icon={Package}
-            title="No inventory items yet"
-            description="Add donated or procured stock to start tracking availability."
+            title="No inventory items found"
+            description="Add donated or procured stock to start tracking warehouse availability."
             action={
               !noCategories && (
                 <Button onClick={() => setAddOpen(true)}>
                   <Plus className="h-4 w-4" />
-                  Add item
+                  Inbound Donor Supply Intake
                 </Button>
               )
             }
@@ -135,58 +197,81 @@ export default function InventoryPage() {
         ) : (
           <Table>
             <THead>
-              <TH>Item</TH>
+              <TH>Item & Warehouse Location</TH>
               <TH>Category</TH>
-              <TH className="w-56">Stock</TH>
+              <TH className="w-56">Stock & Thresholds</TH>
               <TH>Status</TH>
               <TH>Expiry</TH>
               <TH className="text-right">Actions</TH>
             </THead>
             <TBody>
-              {items.map((item) => (
-                <TR key={item.id}>
-                  <TD>
-                    <p className="font-medium text-slate-900">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.storage_location ?? "No location"}
-                    </p>
-                  </TD>
-                  <TD className="text-slate-600">
-                    {categoryName(item.category_id)}
-                  </TD>
-                  <TD>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium text-slate-900">
-                        {item.quantity_available} avail.
-                      </span>
-                      <span className="text-muted-foreground">
-                        {item.quantity_reserved}/{item.quantity_total} reserved
-                      </span>
-                    </div>
-                    <Progress
-                      className="mt-1.5"
-                      value={pct(item.quantity_reserved, item.quantity_total)}
-                      tone={item.quantity_available === 0 ? "danger" : "brand"}
-                    />
-                  </TD>
-                  <TD>
-                    <InventoryStatusBadge status={item.status} />
-                  </TD>
-                  <TD className="text-slate-600">
-                    {formatDate(item.expiry_date)}
-                  </TD>
-                  <TD className="text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={item.quantity_available === 0}
-                      onClick={() => setReserveItem(item)}
-                    >
-                      Reserve
-                    </Button>
-                  </TD>
-                </TR>
-              ))}
+              {filteredItems.map((item) => {
+                const isLowStock =
+                  item.quantity_available <= 10 && item.quantity_available > 0;
+                return (
+                  <TR key={item.id}>
+                    <TD>
+                      <p className="font-semibold text-slate-900">
+                        {item.name}
+                      </p>
+                      <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                        <MapPin className="h-3 w-3 text-brand-600" />
+                        {item.storage_location ?? "Central Warehouse"}
+                      </p>
+                    </TD>
+                    <TD className="text-slate-600">
+                      {categoryName(item.category_id)}
+                    </TD>
+                    <TD>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-slate-900">
+                          {item.quantity_available} avail.
+                        </span>
+                        <span className="text-muted-foreground">
+                          {item.quantity_reserved}/{item.quantity_total} reserved
+                        </span>
+                      </div>
+                      <Progress
+                        className="mt-1.5"
+                        value={pct(
+                          item.quantity_reserved,
+                          item.quantity_total,
+                        )}
+                        tone={
+                          item.quantity_available === 0
+                            ? "danger"
+                            : isLowStock
+                              ? "warning"
+                              : "brand"
+                        }
+                      />
+                      {isLowStock && (
+                        <div className="mt-1">
+                          <Badge tone="warning" className="text-[10px]">
+                            ⚠️ Low Stock (≤10)
+                          </Badge>
+                        </div>
+                      )}
+                    </TD>
+                    <TD>
+                      <InventoryStatusBadge status={item.status} />
+                    </TD>
+                    <TD className="text-slate-600">
+                      {formatDate(item.expiry_date)}
+                    </TD>
+                    <TD className="text-right">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={item.quantity_available === 0}
+                        onClick={() => setReserveItem(item)}
+                      >
+                        Reserve
+                      </Button>
+                    </TD>
+                  </TR>
+                );
+              })}
             </TBody>
           </Table>
         )}
@@ -247,15 +332,15 @@ function AddItemModal({
     <Modal
       open
       onClose={onClose}
-      title="Add inventory item"
-      description="Register donated or procured stock."
+      title="Inbound Donor Supply Intake"
+      description="Register incoming donor stock or procured supplies with warehouse location tagging."
       footer={
         <>
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
           <Button loading={add.isPending} disabled={!valid} onClick={submit}>
-            Add item
+            Record Inbound Intake
           </Button>
         </>
       }
