@@ -1,12 +1,26 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertCircle, Megaphone, Radio, Search, ShieldAlert } from "lucide-react";
+import {
+  AlertCircle,
+  Megaphone,
+  Radio,
+  Search,
+  ShieldAlert,
+} from "lucide-react";
 import { useAlerts } from "@/lib/hooks";
 import type { AlertSeverity, DisasterAlertRead } from "@/lib/types";
 import { formatDateTime, relativeTime } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
-import { Card, EmptyState, Input, Select, Skeleton, Button, Badge } from "@/components/ui/primitives";
+import {
+  Card,
+  EmptyState,
+  Input,
+  Select,
+  Skeleton,
+  Button,
+  Badge,
+} from "@/components/ui/primitives";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { BroadcastAlertModal } from "@/components/features/broadcast-alert-modal";
 
@@ -14,7 +28,8 @@ const MOCK_ALERTS: DisasterAlertRead[] = [
   {
     id: "alt-001",
     title: "Kelani River Basin Evacuation Warning",
-    message: "River water levels have reached critical threshold (Level 2). Evacuation support units deployed in Kolonnawa.",
+    message:
+      "River water levels have reached critical threshold (Level 2). Evacuation support units deployed in Kolonnawa.",
     severity: "HIGH",
     is_active: true,
     created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
@@ -22,7 +37,8 @@ const MOCK_ALERTS: DisasterAlertRead[] = [
   {
     id: "alt-002",
     title: "Heavy Rainfall Advisory - Western Province",
-    message: "Heavy rainfall exceeding 100mm expected in Colombo and Gampaha districts over next 24 hours.",
+    message:
+      "Heavy rainfall exceeding 100mm expected in Colombo and Gampaha districts over next 24 hours.",
     severity: "MEDIUM",
     is_active: true,
     created_at: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
@@ -30,7 +46,8 @@ const MOCK_ALERTS: DisasterAlertRead[] = [
   {
     id: "alt-003",
     title: "Relief Supply Hub Location Update",
-    message: "New medical supply distribution camp opened at Kaduwela Central College grounds.",
+    message:
+      "New medical supply distribution camp opened at Kaduwela Central College grounds.",
     severity: "LOW",
     is_active: true,
     created_at: new Date(Date.now() - 1000 * 60 * 600).toISOString(),
@@ -51,7 +68,8 @@ export default function AlertsPage() {
   const filteredAlerts = useMemo(() => {
     const q = search.trim().toLowerCase();
     return alertList.filter((a) => {
-      const matchSev = severityFilter === "all" || a.severity === severityFilter;
+      const matchSev =
+        severityFilter === "all" || a.severity === severityFilter;
       const matchSearch =
         !q ||
         a.title.toLowerCase().includes(q) ||
@@ -130,13 +148,9 @@ export default function AlertsPage() {
                         HIGH
                       </Badge>
                     ) : a.severity === "MEDIUM" ? (
-                      <Badge tone="warning">
-                        MEDIUM
-                      </Badge>
+                      <Badge tone="warning">MEDIUM</Badge>
                     ) : (
-                      <Badge tone="success">
-                        LOW
-                      </Badge>
+                      <Badge tone="success">LOW</Badge>
                     )}
                   </TD>
 
@@ -148,9 +162,7 @@ export default function AlertsPage() {
                   </TD>
 
                   <TD>
-                    <Badge tone="purple">
-                      Effective Tenant Scope
-                    </Badge>
+                    <Badge tone="purple">Effective Tenant Scope</Badge>
                   </TD>
 
                   <TD className="text-right">

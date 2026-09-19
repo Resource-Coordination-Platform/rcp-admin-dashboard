@@ -77,7 +77,9 @@ export default function OverviewPage() {
     profile?.user_type === "SUPER_ADMIN" || roles.includes("super_admin");
 
   const inventoryItems = inventory.data ?? [];
-  const lowStockItems = inventoryItems.filter((i) => i.quantity_available <= 10);
+  const lowStockItems = inventoryItems.filter(
+    (i) => i.quantity_available <= 10,
+  );
 
   const summaryData = summary.data ?? {};
   const totalRequests = Object.values(summaryData).reduce((a, b) => a + b, 0);
@@ -134,18 +136,26 @@ export default function OverviewPage() {
             </div>
             <div>
               <h4 className="font-bold text-sm text-amber-950">
-                ⚠️ Low-Stock Threshold Warning ({lowStockItems.length} items critical)
+                ⚠️ Low-Stock Threshold Warning ({lowStockItems.length} items
+                critical)
               </h4>
               <p className="text-xs text-amber-800 mt-0.5">
-                The following warehouse inventory items are below minimum operating thresholds:{" "}
+                The following warehouse inventory items are below minimum
+                operating thresholds:{" "}
                 <span className="font-semibold">
-                  {lowStockItems.map((i) => `${i.name} (${i.quantity_available} left)`).join(", ")}
+                  {lowStockItems
+                    .map((i) => `${i.name} (${i.quantity_available} left)`)
+                    .join(", ")}
                 </span>
               </p>
             </div>
           </div>
           <Link href="/inventory" className="shrink-0">
-            <Button size="sm" variant="outline" className="border-amber-400 bg-white hover:bg-amber-100">
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-amber-400 bg-white hover:bg-amber-100"
+            >
               Replenish Inventory
             </Button>
           </Link>

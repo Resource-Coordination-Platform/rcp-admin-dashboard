@@ -3,7 +3,12 @@
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { Boxes, MapPin, Radio, Search } from "lucide-react";
-import { useEvents, useInventory, useRequests, useCategories } from "@/lib/hooks";
+import {
+  useEvents,
+  useInventory,
+  useRequests,
+  useCategories,
+} from "@/lib/hooks";
 import type { HelpRequestRead } from "@/lib/types";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, Input, Skeleton } from "@/components/ui/primitives";
@@ -11,15 +16,10 @@ import { RequestStatusBadge, UrgencyBadge } from "@/components/ui/badges";
 import { RequestDetailModal } from "@/components/features/request-detail-modal";
 
 // Dynamic import for Leaflet GIS Map component (SSR = false)
-const GisMapComponent = dynamic(
-  () => import("@/components/features/gis-map"),
-  {
-    ssr: false,
-    loading: () => (
-      <Skeleton className="h-[650px] w-full rounded-2xl" />
-    ),
-  }
-);
+const GisMapComponent = dynamic(() => import("@/components/features/gis-map"), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[650px] w-full rounded-2xl" />,
+});
 
 export default function MapPage() {
   const requests = useRequests();
@@ -27,8 +27,11 @@ export default function MapPage() {
   const events = useEvents();
   const categories = useCategories(true);
 
-  const [selectedRequest, setSelectedRequest] = useState<HelpRequestRead | null>(null);
-  const [modalRequest, setModalRequest] = useState<HelpRequestRead | null>(null);
+  const [selectedRequest, setSelectedRequest] =
+    useState<HelpRequestRead | null>(null);
+  const [modalRequest, setModalRequest] = useState<HelpRequestRead | null>(
+    null,
+  );
   const [search, setSearch] = useState("");
 
   const { categoryById } = useMemo(() => {
@@ -136,7 +139,11 @@ export default function MapPage() {
       {modalRequest && (
         <RequestDetailModal
           request={modalRequest}
-          category={modalRequest.category_id ? categoryById(modalRequest.category_id) : undefined}
+          category={
+            modalRequest.category_id
+              ? categoryById(modalRequest.category_id)
+              : undefined
+          }
           onClose={() => setModalRequest(null)}
           onChanged={(updated) => setModalRequest(updated)}
         />

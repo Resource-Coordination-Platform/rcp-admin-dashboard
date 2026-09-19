@@ -4,7 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { HelpRequestRead, InventoryItemRead, DisasterEventRead } from "@/lib/types";
+import type {
+  HelpRequestRead,
+  InventoryItemRead,
+  DisasterEventRead,
+} from "@/lib/types";
 import { URGENCY_META } from "@/lib/constants";
 import { Badge, Button } from "@/components/ui/primitives";
 import { UrgencyBadge } from "@/components/ui/badges";
@@ -35,7 +39,12 @@ const ICONS = {
 };
 
 // Haversine Distance Formula (in KM)
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+function calculateDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number {
   const R = 6371; // Earth's radius in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -91,7 +100,7 @@ export default function GisMapComponent({
   // Proximity warehouse calculations for selected request
   const nearbyWarehouses = useMemo(() => {
     if (!selectedRequest?.latitude || !selectedRequest?.longitude) return [];
-    
+
     // Group inventory items by storage_location
     const locMap = new Map<string, InventoryItemRead[]>();
     for (const item of inventory) {
@@ -110,9 +119,20 @@ export default function GisMapComponent({
 
     const results = [];
     for (const [locName, items] of locMap.entries()) {
-      const coords: [number, number] = warehouseCoords[locName] || [6.92 + (results.length * 0.05), 79.85 + (results.length * 0.05)];
-      const dist = calculateDistance(selectedRequest.latitude, selectedRequest.longitude, coords[0], coords[1]);
-      const totalAvailable = items.reduce((a, b) => a + b.quantity_available, 0);
+      const coords: [number, number] = warehouseCoords[locName] || [
+        6.92 + results.length * 0.05,
+        79.85 + results.length * 0.05,
+      ];
+      const dist = calculateDistance(
+        selectedRequest.latitude,
+        selectedRequest.longitude,
+        coords[0],
+        coords[1],
+      );
+      const totalAvailable = items.reduce(
+        (a, b) => a + b.quantity_available,
+        0,
+      );
       results.push({
         location: locName,
         coords,
@@ -143,7 +163,9 @@ export default function GisMapComponent({
         {/* Render Help Requests */}
         {requests.map((r) => {
           if (!r.latitude || !r.longitude) return null;
-          const urgencyKey = (r.urgency ? String(r.urgency).toLowerCase() : "medium") as keyof typeof ICONS;
+          const urgencyKey = (
+            r.urgency ? String(r.urgency).toLowerCase() : "medium"
+          ) as keyof typeof ICONS;
           const icon = ICONS[urgencyKey] || ICONS.medium;
 
           return (
@@ -163,8 +185,14 @@ export default function GisMapComponent({
                       {r.status}
                     </span>
                   </div>
-                  <p className="font-semibold text-sm text-slate-900">{r.description}</p>
-                  <p className="text-xs text-slate-500">📍 {r.area || `${r.latitude.toFixed(3)}, ${r.longitude.toFixed(3)}`}</p>
+                  <p className="font-semibold text-sm text-slate-900">
+                    {r.description}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    📍{" "}
+                    {r.area ||
+                      `${r.latitude.toFixed(3)}, ${r.longitude.toFixed(3)}`}
+                  </p>
                   <Button
                     size="sm"
                     className="w-full mt-2"
@@ -225,7 +253,9 @@ export default function GisMapComponent({
               Nearby Warehouses & Available Stock:
             </p>
             {nearbyWarehouses.length === 0 ? (
-              <p className="text-xs text-slate-400">No warehouse coordinates available.</p>
+              <p className="text-xs text-slate-400">
+                No warehouse coordinates available.
+              </p>
             ) : (
               <div className="max-h-40 space-y-1.5 overflow-y-auto pr-1">
                 {nearbyWarehouses.map((wh) => (

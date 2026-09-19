@@ -15,7 +15,7 @@ export function ProfileSecurityModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const toast = useToast();  // Hook to show toast notifications
+  const toast = useToast(); // Hook to show toast notifications
   const { profile, updateProfile, changePassword, claims } = useAuth();
 
   const [fullName, setFullName] = useState("");
@@ -45,7 +45,8 @@ export function ProfileSecurityModal({
     const trimmedName = fullName.trim();
     const trimmedPhone = phone.trim();
 
-    if (!trimmedName) {   // This is a validation
+    if (!trimmedName) {
+      // This is a validation
       toast.error("Full name required", "Please enter your display name.");
       return;
     }

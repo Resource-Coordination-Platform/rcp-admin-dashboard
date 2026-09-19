@@ -1,11 +1,26 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { KeyRound, Mail, Search, ShieldAlert, ShieldCheck, UserX, Users } from "lucide-react";
+import {
+  KeyRound,
+  Mail,
+  Search,
+  ShieldAlert,
+  ShieldCheck,
+  UserX,
+  Users,
+} from "lucide-react";
 import { useAdminResetUserPassword } from "@/lib/hooks";
 import type { UserType } from "@/lib/types";
 import { PageHeader } from "@/components/ui/page-header";
-import { Card, EmptyState, Input, Select, Button, Badge } from "@/components/ui/primitives";
+import {
+  Card,
+  EmptyState,
+  Input,
+  Select,
+  Button,
+  Badge,
+} from "@/components/ui/primitives";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Modal } from "@/components/ui/modal";
 import { Field } from "@/components/ui/primitives";
@@ -90,12 +105,12 @@ export default function GlobalUsersPage() {
           const nextStatus = u.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
           toast.success(
             "User Status Updated",
-            `${u.full_name} is now ${nextStatus.toLowerCase()}.`
+            `${u.full_name} is now ${nextStatus.toLowerCase()}.`,
           );
           return { ...u, status: nextStatus };
         }
         return u;
-      })
+      }),
     );
   };
 
@@ -108,7 +123,10 @@ export default function GlobalUsersPage() {
         userId: resetUser.id,
         body: { new_password: newPassword },
       });
-      toast.success("Password Reset", `Password reset link/token generated for ${resetUser.full_name}.`);
+      toast.success(
+        "Password Reset",
+        `Password reset link/token generated for ${resetUser.full_name}.`,
+      );
       setResetUser(null);
       setNewPassword("");
     } catch {
@@ -170,7 +188,9 @@ export default function GlobalUsersPage() {
               {filteredUsers.map((u) => (
                 <TR key={u.id}>
                   <TD>
-                    <p className="font-semibold text-slate-900">{u.full_name}</p>
+                    <p className="font-semibold text-slate-900">
+                      {u.full_name}
+                    </p>
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <Mail className="h-3 w-3 text-slate-400" />
                       {u.email}
@@ -183,7 +203,9 @@ export default function GlobalUsersPage() {
                         {u.tenant_slug}
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-400 italic">Global User</span>
+                      <span className="text-xs text-slate-400 italic">
+                        Global User
+                      </span>
                     )}
                   </TD>
 
@@ -253,7 +275,11 @@ export default function GlobalUsersPage() {
             </Field>
 
             <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" onClick={() => setResetUser(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setResetUser(null)}
+              >
                 Cancel
               </Button>
               <Button type="submit" loading={resetPasswordMutation.isPending}>

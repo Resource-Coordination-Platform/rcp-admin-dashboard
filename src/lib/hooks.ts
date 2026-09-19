@@ -330,7 +330,9 @@ export function useUpdateTenantStatus() {
       tenantId: string;
       status: "active" | "suspended" | "disabled";
     }) =>
-      api.patch<TenantRead>(`/api/admin/tenants/${tenantId}/status`, { status }),
+      api.patch<TenantRead>(`/api/admin/tenants/${tenantId}/status`, {
+        status,
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.tenants }),
   });
 }
@@ -351,5 +353,3 @@ export function useBroadcastAlert() {
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.alerts }),
   });
 }
-
-

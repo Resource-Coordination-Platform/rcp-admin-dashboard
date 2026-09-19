@@ -104,18 +104,20 @@ export function Sidebar({
         </nav>
 
         {/* Footer */}
-        {<div className="border-t border-white/5 p-4">
-          <div className="rounded-xl bg-white/5 p-3">
-            <p className="text-xs font-medium text-white">Need help?</p>
-            <p className="mt-0.5 text-[11px] leading-relaxed text-sidebar-muted">
-              Review the API docs at{" "}
-              <span className="text-brand-300">/docs</span> on each service.
-              <p className="mt-1 text-[11px] leading-relaxed text-sidebar-muted">
-                Only for administrators and developers. 
+        {
+          <div className="border-t border-white/5 p-4">
+            <div className="rounded-xl bg-white/5 p-3">
+              <p className="text-xs font-medium text-white">Need help?</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-sidebar-muted">
+                Review the API docs at{" "}
+                <span className="text-brand-300">/docs</span> on each service.
+                <p className="mt-1 text-[11px] leading-relaxed text-sidebar-muted">
+                  Only for administrators and developers.
+                </p>
               </p>
-            </p>
+            </div>
           </div>
-        </div>}
+        }
       </aside>
     </>
   );

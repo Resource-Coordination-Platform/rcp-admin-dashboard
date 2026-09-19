@@ -2,7 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Boxes, LifeBuoy, Radio, ShieldCheck, Building2, ShieldAlert, Power } from "lucide-react";
+import {
+  ArrowRight,
+  Boxes,
+  LifeBuoy,
+  Radio,
+  ShieldCheck,
+  Building2,
+  ShieldAlert,
+  Power,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth"; // react hook for authentication
 import { ApiError } from "@/lib/api";
 import { Button, Field, Input } from "@/components/ui/primitives";
@@ -11,23 +20,31 @@ export default function LoginPage() {
   const router = useRouter();
   const { login, isAuthenticated, isLoading } = useAuth();
   const [tenantSlug, setTenantSlug] = useState("");
-  const [tenantInfo, setTenantInfo] = useState<{ name: string; status: string } | null>(null);
+  const [tenantInfo, setTenantInfo] = useState<{
+    name: string;
+    status: string;
+  } | null>(null);
   const [tenantLoading, setTenantLoading] = useState(false);
-  const [errorCode, setErrorCode] = useState<"INVALID_CREDENTIALS" | "TENANT_SUSPENDED" | "USER_DISABLED" | null>(null);
+  const [errorCode, setErrorCode] = useState<
+    "INVALID_CREDENTIALS" | "TENANT_SUSPENDED" | "USER_DISABLED" | null
+  >(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Debounced Tenant Lookup when user types tenantSlug
-useEffect(() => {
-  const slug = tenantSlug.trim().toLowerCase();
-  if (!slug) {
-    setTenantInfo(null);
-    return;
-  }
-  const timer = setTimeout(async () => {
-      const formattedName = slug.split("-").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+  useEffect(() => {
+    const slug = tenantSlug.trim().toLowerCase();
+    if (!slug) {
+      setTenantInfo(null);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      const formattedName = slug
+        .split("-")
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" ");
       setTenantInfo({ name: formattedName, status: "active" });
     }, 300);
     return () => clearTimeout(timer);
@@ -44,15 +61,24 @@ useEffect(() => {
       router.replace("/dashboard");
     } catch (err) {
       if (err instanceof ApiError) {
-        if (err.status === 403 || err.detail.toLowerCase().includes("suspended")) {
+        if (
+          err.status === 403 ||
+          err.detail.toLowerCase().includes("suspended")
+        ) {
           setErrorCode("TENANT_SUSPENDED");
-          setError("Organization account has been suspended. Please contact platform administration.");
+          setError(
+            "Organization account has been suspended. Please contact platform administration.",
+          );
         } else if (err.detail.toLowerCase().includes("disabled")) {
           setErrorCode("USER_DISABLED");
           setError("Your user account is disabled. Access revoked.");
         } else {
           setErrorCode("INVALID_CREDENTIALS");
-          setError(err.status === 401 ? "Invalid tenant, email or password." : err.detail);
+          setError(
+            err.status === 401
+              ? "Invalid tenant, email or password."
+              : err.detail,
+          );
         }
       } else {
         setError("Unable to reach the server. Is the gateway running?");
@@ -78,7 +104,9 @@ useEffect(() => {
             <ShieldCheck className="h-6 w-6" />
           </div>
           <div>
-            <p className="font-semibold">Sahasra Resource Coordination Platform</p>
+            <p className="font-semibold">
+              Sahasra Resource Coordination Platform
+            </p>
             <p className="text-sm text-sidebar-muted">Tenant Admin Console</p>
           </div>
         </div>
@@ -139,8 +167,12 @@ useEffect(() => {
                 <Building2 className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-[10px] text-brand-600 font-bold uppercase tracking-wider">Organization Target</p>
-                <p className="text-xs font-bold text-slate-900">{tenantInfo.name}</p>
+                <p className="text-[10px] text-brand-600 font-bold uppercase tracking-wider">
+                  Organization Target
+                </p>
+                <p className="text-xs font-bold text-slate-900">
+                  {tenantInfo.name}
+                </p>
               </div>
             </div>
           )}
@@ -184,8 +216,8 @@ useEffect(() => {
                   (errorCode === "TENANT_SUSPENDED"
                     ? "border-amber-300 bg-amber-50 text-amber-900"
                     : errorCode === "USER_DISABLED"
-                    ? "border-red-300 bg-red-50 text-red-900"
-                    : "border-red-200 bg-red-50 text-red-700")
+                      ? "border-red-300 bg-red-50 text-red-900"
+                      : "border-red-200 bg-red-50 text-red-700")
                 }
               >
                 {errorCode === "TENANT_SUSPENDED" ? (
@@ -198,8 +230,8 @@ useEffect(() => {
                     {errorCode === "TENANT_SUSPENDED"
                       ? "TENANT_SUSPENDED"
                       : errorCode === "USER_DISABLED"
-                      ? "USER_DISABLED"
-                      : "Authentication Failed"}
+                        ? "USER_DISABLED"
+                        : "Authentication Failed"}
                   </p>
                   <p className="text-xs mt-0.5 opacity-90">{error}</p>
                 </div>

@@ -81,7 +81,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
               <div
                 className="fixed inset-0 z-30"
                 aria-hidden
-                onClick={() => setMenuOpen(false)}  // close menu when clicking outside
+                onClick={() => setMenuOpen(false)} // close menu when clicking outside
               />
               <div className="absolute right-0 top-full z-40 mt-2 w-60 animate-scale-in rounded-xl border border-border bg-surface p-1.5 shadow-elevated">
                 <div className="border-b border-border px-3 py-2.5">

@@ -1,11 +1,27 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download, FileText, Printer, Search, BarChart3, CheckCircle2, LifeBuoy, Package } from "lucide-react";
+import {
+  Download,
+  FileText,
+  Printer,
+  Search,
+  BarChart3,
+  CheckCircle2,
+  LifeBuoy,
+  Package,
+} from "lucide-react";
 import { useNeedVsFulfillment, useRequestSummary } from "@/lib/hooks";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
-import { Card, EmptyState, Input, Skeleton, Button, Badge } from "@/components/ui/primitives";
+import {
+  Card,
+  EmptyState,
+  Input,
+  Skeleton,
+  Button,
+  Badge,
+} from "@/components/ui/primitives";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { useToast } from "@/components/ui/toast";
 
@@ -40,14 +56,26 @@ export default function ReportsPage() {
       return;
     }
 
-    const headers = ["Category ID", "Category Name", "Open Requests", "Fulfilled Requests", "Quantity Needed", "Stock Available", "Coverage Rate (%)"];
+    const headers = [
+      "Category ID",
+      "Category Name",
+      "Open Requests",
+      "Fulfilled Requests",
+      "Quantity Needed",
+      "Stock Available",
+      "Coverage Rate (%)",
+    ];
     const csvLines = [headers.join(",")];
 
     for (const row of dataRows) {
-      const coverage = row.quantity_needed > 0
-        ? Math.min(100, Math.round((row.stock_available / row.quantity_needed) * 100))
-        : 100;
-      
+      const coverage =
+        row.quantity_needed > 0
+          ? Math.min(
+              100,
+              Math.round((row.stock_available / row.quantity_needed) * 100),
+            )
+          : 100;
+
       const line = [
         `"${row.category_id}"`,
         `"${row.category.replace(/"/g, '""')}"`,
@@ -60,16 +88,24 @@ export default function ReportsPage() {
       csvLines.push(line.join(","));
     }
 
-    const blob = new Blob([csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([csvLines.join("\n")], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `RCP_Need_vs_Fulfillment_Report_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute(
+      "download",
+      `RCP_Need_vs_Fulfillment_Report_${new Date().toISOString().slice(0, 10)}.csv`,
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    toast.success("CSV Downloaded", "Need vs Fulfillment report exported to CSV.");
+    toast.success(
+      "CSV Downloaded",
+      "Need vs Fulfillment report exported to CSV.",
+    );
   };
 
   // Export to PDF / Print Function
@@ -172,16 +208,24 @@ export default function ReportsPage() {
             </THead>
             <TBody>
               {filteredRows.map((r) => {
-                const coverage = r.quantity_needed > 0
-                  ? Math.min(100, Math.round((r.stock_available / r.quantity_needed) * 100))
-                  : 100;
-                
+                const coverage =
+                  r.quantity_needed > 0
+                    ? Math.min(
+                        100,
+                        Math.round(
+                          (r.stock_available / r.quantity_needed) * 100,
+                        ),
+                      )
+                    : 100;
+
                 const isShortage = r.stock_available < r.quantity_needed;
 
                 return (
                   <TR key={r.category_id}>
                     <TD>
-                      <p className="font-semibold text-slate-900">{r.category}</p>
+                      <p className="font-semibold text-slate-900">
+                        {r.category}
+                      </p>
                     </TD>
                     <TD>
                       <span className="font-mono text-xs font-medium text-slate-700">

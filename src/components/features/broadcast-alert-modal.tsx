@@ -6,7 +6,13 @@ import { useBroadcastAlert } from "@/lib/hooks";
 import type { AlertSeverity } from "@/lib/types";
 import { ApiError } from "@/lib/api";
 import { Modal } from "@/components/ui/modal";
-import { Button, Field, Input, Select, Textarea } from "@/components/ui/primitives";
+import {
+  Button,
+  Field,
+  Input,
+  Select,
+  Textarea,
+} from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
 
 export function BroadcastAlertModal({
@@ -42,7 +48,7 @@ export function BroadcastAlertModal({
 
       toast.success(
         "Alert Broadcasted",
-        `Emergency alert "${title}" broadcasted successfully.`
+        `Emergency alert "${title}" broadcasted successfully.`,
       );
       onClose();
     } catch (err) {
@@ -70,7 +76,11 @@ export function BroadcastAlertModal({
           </div>
         )}
 
-        <Field label="Alert Title" required hint="e.g. Flash Flood Warning - Kelani River Basin">
+        <Field
+          label="Alert Title"
+          required
+          hint="e.g. Flash Flood Warning - Kelani River Basin"
+        >
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -85,12 +95,18 @@ export function BroadcastAlertModal({
             onChange={(e) => setSeverity(e.target.value as AlertSeverity)}
           >
             <option value="HIGH">🚨 HIGH - Severe Threat (Red Alert)</option>
-            <option value="MEDIUM">🟧 MEDIUM - Advisory / Warning (Orange Alert)</option>
+            <option value="MEDIUM">
+              🟧 MEDIUM - Advisory / Warning (Orange Alert)
+            </option>
             <option value="LOW">🟩 LOW - Informational (Green Alert)</option>
           </Select>
         </Field>
 
-        <Field label="Broadcast Message Body" required hint="Instructions or evacuation guidance for ground teams">
+        <Field
+          label="Broadcast Message Body"
+          required
+          hint="Instructions or evacuation guidance for ground teams"
+        >
           <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -104,7 +120,11 @@ export function BroadcastAlertModal({
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" loading={broadcastMutation.isPending} variant="danger">
+          <Button
+            type="submit"
+            loading={broadcastMutation.isPending}
+            variant="danger"
+          >
             <Megaphone className="h-4 w-4" />
             Broadcast Alert Now
           </Button>

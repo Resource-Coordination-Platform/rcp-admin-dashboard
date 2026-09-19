@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Building2, KeyRound, Mail, User, Globe, AlertCircle } from "lucide-react";
+import {
+  Building2,
+  KeyRound,
+  Mail,
+  User,
+  Globe,
+  AlertCircle,
+} from "lucide-react";
 import { useCreateTenant } from "@/lib/hooks";
 import { ApiError } from "@/lib/api";
 import { Modal } from "@/components/ui/modal";
@@ -41,7 +48,12 @@ export function TenantOnboardingModal({
     e.preventDefault();
     setError(null);
 
-    if (!name.trim() || !slug.trim() || !adminEmail.trim() || !adminPassword.trim()) {
+    if (
+      !name.trim() ||
+      !slug.trim() ||
+      !adminEmail.trim() ||
+      !adminPassword.trim()
+    ) {
       setError("Please fill out all required fields.");
       return;
     }
@@ -58,14 +70,16 @@ export function TenantOnboardingModal({
 
       toast.success(
         "Tenant Onboarded",
-        `Organization "${name}" has been registered successfully.`
+        `Organization "${name}" has been registered successfully.`,
       );
       onClose();
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.detail);
       } else {
-        setError("Failed to create tenant. Please verify the gateway connection.");
+        setError(
+          "Failed to create tenant. Please verify the gateway connection.",
+        );
       }
     }
   }
@@ -94,7 +108,11 @@ export function TenantOnboardingModal({
           </h3>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Organization Name" required hint="e.g. Kolonnawa Mutual Aid">
+            <Field
+              label="Organization Name"
+              required
+              hint="e.g. Kolonnawa Mutual Aid"
+            >
               <Input
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
@@ -103,12 +121,20 @@ export function TenantOnboardingModal({
               />
             </Field>
 
-            <Field label="Unique Slug" required hint="Identifier for login (e.g. kolonnawa)">
+            <Field
+              label="Unique Slug"
+              required
+              hint="Identifier for login (e.g. kolonnawa)"
+            >
               <div className="relative">
                 <Globe className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                   value={slug}
-                  onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                  onChange={(e) =>
+                    setSlug(
+                      e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+                    )
+                  }
                   placeholder="colombo-redcross"
                   className="pl-9 font-mono text-sm"
                   required
@@ -117,7 +143,10 @@ export function TenantOnboardingModal({
             </Field>
           </div>
 
-          <Field label="Description" hint="Optional summary of operations or region">
+          <Field
+            label="Description"
+            hint="Optional summary of operations or region"
+          >
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}

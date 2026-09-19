@@ -7,7 +7,13 @@ import { URGENCY_META } from "@/lib/constants";
 import type { HelpRequestRead, RequestStatus } from "@/lib/types";
 import { formatDateTime, relativeTime } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
-import { Card, EmptyState, Input, Select, Skeleton } from "@/components/ui/primitives";
+import {
+  Card,
+  EmptyState,
+  Input,
+  Select,
+  Skeleton,
+} from "@/components/ui/primitives";
 import { RequestStatusBadge, UrgencyBadge } from "@/components/ui/badges";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { RequestDetailModal } from "@/components/features/request-detail-modal";
@@ -46,31 +52,36 @@ export default function RequestsPage() {
     const list = data ?? [];
     const q = search.trim().toLowerCase();
 
-    return list.filter((r) => {
-      const matchStatus =
-        filter === "all" ||
-        (r.status ? String(r.status).toLowerCase() : "pending") === filter;
+    return list
+      .filter((r) => {
+        const matchStatus =
+          filter === "all" ||
+          (r.status ? String(r.status).toLowerCase() : "pending") === filter;
 
-      const matchUrgency =
-        urgencyFilter === "all" ||
-        (r.urgency ? String(r.urgency).toLowerCase() : "medium") === urgencyFilter;
+        const matchUrgency =
+          urgencyFilter === "all" ||
+          (r.urgency ? String(r.urgency).toLowerCase() : "medium") ===
+            urgencyFilter;
 
-      const matchCategory =
-        categoryFilter === "all" || r.category_id === categoryFilter;
+        const matchCategory =
+          categoryFilter === "all" || r.category_id === categoryFilter;
 
-      const matchSearch =
-        !q ||
-        r.description.toLowerCase().includes(q) ||
-        r.area?.toLowerCase().includes(q) ||
-        categoryName(r.category_id ?? "").toLowerCase().includes(q);
+        const matchSearch =
+          !q ||
+          r.description.toLowerCase().includes(q) ||
+          r.area?.toLowerCase().includes(q) ||
+          categoryName(r.category_id ?? "")
+            .toLowerCase()
+            .includes(q);
 
-      return matchStatus && matchUrgency && matchCategory && matchSearch;
-    }).sort(
-      (a, b) =>
-        URGENCY_META[b.urgency ?? "medium"].rank -
-          URGENCY_META[a.urgency ?? "medium"].rank ||
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
+        return matchStatus && matchUrgency && matchCategory && matchSearch;
+      })
+      .sort(
+        (a, b) =>
+          URGENCY_META[b.urgency ?? "medium"].rank -
+            URGENCY_META[a.urgency ?? "medium"].rank ||
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
   }, [data, filter, urgencyFilter, categoryFilter, search, categoryName]);
 
   return (
@@ -192,7 +203,8 @@ export default function RequestsPage() {
                     </p>
                   </TD>
                   <TD className="text-slate-600">
-                    {r.disaster_type || (r.category_id ? categoryName(r.category_id) : "General")}
+                    {r.disaster_type ||
+                      (r.category_id ? categoryName(r.category_id) : "General")}
                   </TD>
                   <TD>
                     <UrgencyBadge level={r.urgency ?? "medium"} />
@@ -218,7 +230,11 @@ export default function RequestsPage() {
       {selected && (
         <RequestDetailModal
           request={selected}
-          category={selected.category_id ? categoryById(selected.category_id) : undefined}
+          category={
+            selected.category_id
+              ? categoryById(selected.category_id)
+              : undefined
+          }
           onClose={() => setSelected(null)}
           onChanged={(updated) => setSelected(updated)}
         />

@@ -71,7 +71,9 @@ export function RequestDetailModal({
   const [showDispatch, setShowDispatch] = useState(false);
   const [showStockAllocation, setShowStockAllocation] = useState(false);
 
-  const currentStatus = (request.status ? String(request.status).toLowerCase() : "pending") as RequestStatus;
+  const currentStatus = (
+    request.status ? String(request.status).toLowerCase() : "pending"
+  ) as RequestStatus;
 
   // The actions offered come from the category's own approval flow, not a
   // fixed map — that is what makes the workflow engine customizable. Anything
@@ -123,7 +125,7 @@ export function RequestDetailModal({
       description={
         request.disaster_type
           ? `Disaster: ${request.disaster_type}`
-          : category?.name ?? "Uncategorized"
+          : (category?.name ?? "Uncategorized")
       }
       footer={
         <>
@@ -217,7 +219,8 @@ export function RequestDetailModal({
                 rel="noreferrer"
                 className="text-brand-600 hover:underline"
               >
-                📍 Open coordinates in Google Maps ({request.latitude.toFixed(4)}, {request.longitude.toFixed(4)})
+                📍 Open coordinates in Google Maps (
+                {request.latitude.toFixed(4)}, {request.longitude.toFixed(4)})
               </a>
             </div>
           )}
@@ -246,7 +249,8 @@ export function RequestDetailModal({
                 Allocate Warehouse Stock
               </p>
               <p className="text-xs text-muted-foreground">
-                Match required items with available warehouse inventory & reserve stock.
+                Match required items with available warehouse inventory &
+                reserve stock.
               </p>
             </div>
             <Button
@@ -570,8 +574,12 @@ function StockAllocationPanel({
   const reserveMutation = useReserveStock();
   const updateStatus = useUpdateRequestStatus();
 
-  const [selectedItem, setSelectedItem] = useState<InventoryItemRead | null>(null);
-  const [quantity, setQuantity] = useState<number>(request.quantity_needed || 1);
+  const [selectedItem, setSelectedItem] = useState<InventoryItemRead | null>(
+    null,
+  );
+  const [quantity, setQuantity] = useState<number>(
+    request.quantity_needed || 1,
+  );
 
   const items = inventoryQuery.data ?? [];
   const displayItems = request.category_id
@@ -582,8 +590,14 @@ function StockAllocationPanel({
     if (!selectedItem) return;
     try {
       await reserveMutation.mutateAsync({ id: selectedItem.id, quantity });
-      const updatedReq = await updateStatus.mutateAsync({ id: request.id, status: "in_progress" });
-      toast.success("Stock Allocated", `Reserved ${quantity} ${category?.unit || "units"} of "${selectedItem.name}".`);
+      const updatedReq = await updateStatus.mutateAsync({
+        id: request.id,
+        status: "in_progress",
+      });
+      toast.success(
+        "Stock Allocated",
+        `Reserved ${quantity} ${category?.unit || "units"} of "${selectedItem.name}".`,
+      );
       onAllocated(updatedReq);
     } catch (err) {
       toast.error("Allocation Failed", "Could not reserve stock.");
@@ -644,13 +658,18 @@ function StockAllocationPanel({
 
       {selectedItem && (
         <div className="space-y-3 border-t border-border pt-4">
-          <Field label={`Reserve Quantity (${category?.unit || "units"})`} required>
+          <Field
+            label={`Reserve Quantity (${category?.unit || "units"})`}
+            required
+          >
             <Input
               type="number"
               min={1}
               max={selectedItem.quantity_available}
               value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+              onChange={(e) =>
+                setQuantity(Math.max(1, parseInt(e.target.value) || 1))
+              }
             />
           </Field>
           <div className="flex justify-end">
@@ -667,4 +686,3 @@ function StockAllocationPanel({
     </div>
   );
 }
-

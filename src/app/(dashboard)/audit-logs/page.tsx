@@ -1,9 +1,23 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ClipboardList, Filter, Search, ShieldCheck, UserCheck, Boxes, AlertCircle } from "lucide-react";
+import {
+  ClipboardList,
+  Filter,
+  Search,
+  ShieldCheck,
+  UserCheck,
+  Boxes,
+  AlertCircle,
+} from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { Card, EmptyState, Input, Select, Badge } from "@/components/ui/primitives";
+import {
+  Card,
+  EmptyState,
+  Input,
+  Select,
+  Badge,
+} from "@/components/ui/primitives";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { formatDateTime, relativeTime } from "@/lib/format";
 
@@ -69,7 +83,8 @@ export default function AuditLogsPage() {
   const filteredLogs = useMemo(() => {
     const q = search.trim().toLowerCase();
     return INITIAL_AUDIT_LOGS.filter((log) => {
-      const matchCat = categoryFilter === "all" || log.category === categoryFilter;
+      const matchCat =
+        categoryFilter === "all" || log.category === categoryFilter;
       const matchSearch =
         !q ||
         log.action.toLowerCase().includes(q) ||
@@ -139,12 +154,18 @@ export default function AuditLogsPage() {
                   </TD>
 
                   <TD>
-                    <p className="font-medium text-xs text-slate-900">{log.actor}</p>
-                    <span className="text-[10px] text-muted-foreground">{log.role}</span>
+                    <p className="font-medium text-xs text-slate-900">
+                      {log.actor}
+                    </p>
+                    <span className="text-[10px] text-muted-foreground">
+                      {log.role}
+                    </span>
                   </TD>
 
                   <TD>
-                    <p className="max-w-md text-xs text-slate-700">{log.details}</p>
+                    <p className="max-w-md text-xs text-slate-700">
+                      {log.details}
+                    </p>
                   </TD>
 
                   <TD>
@@ -153,8 +174,8 @@ export default function AuditLogsPage() {
                         log.category === "INVENTORY"
                           ? "warning"
                           : log.category === "DISPATCH"
-                          ? "brand"
-                          : "success"
+                            ? "brand"
+                            : "success"
                       }
                     >
                       {log.category}

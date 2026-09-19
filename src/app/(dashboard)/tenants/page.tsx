@@ -19,7 +19,14 @@ import type { TenantRead } from "@/lib/types";
 import { formatDateTime, relativeTime } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
-import { Card, EmptyState, Input, Skeleton, Button, Badge } from "@/components/ui/primitives";
+import {
+  Card,
+  EmptyState,
+  Input,
+  Skeleton,
+  Button,
+  Badge,
+} from "@/components/ui/primitives";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { TenantOnboardingModal } from "@/components/features/tenant-onboarding-modal";
 import { useToast } from "@/components/ui/toast";
@@ -75,7 +82,7 @@ export default function TenantsPage() {
 
   const handleStatusToggle = async (
     tenant: TenantRead,
-    newStatus: "active" | "suspended" | "disabled"
+    newStatus: "active" | "suspended" | "disabled",
   ) => {
     try {
       await updateStatus.mutateAsync({
@@ -84,7 +91,7 @@ export default function TenantsPage() {
       });
       toast.success(
         "Status Updated",
-        `Organization "${tenant.name}" status changed to ${newStatus.toUpperCase()}.`
+        `Organization "${tenant.name}" status changed to ${newStatus.toUpperCase()}.`,
       );
     } catch (err) {
       toast.error("Update Failed", "Could not change tenant status.");
@@ -183,8 +190,8 @@ export default function TenantsPage() {
               search
                 ? "No matching organizations"
                 : filter === "all"
-                ? "No tenants registered yet"
-                : `No ${filter} organizations`
+                  ? "No tenants registered yet"
+                  : `No ${filter} organizations`
             }
             description="Onboard your first tenant organization using the button above."
           />
