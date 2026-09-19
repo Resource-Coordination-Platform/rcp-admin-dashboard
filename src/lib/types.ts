@@ -2,6 +2,7 @@
 // Source of truth: services/{iam,logistics,analytics,volunteer}/app/schemas.
 
 export type UserType =
+  | "SUPER_ADMIN"
   | "VOLUNTEER"
   | "VICTIM"
   | "DONATOR"

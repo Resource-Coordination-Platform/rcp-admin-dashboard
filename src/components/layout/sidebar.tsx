@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShieldCheck, X } from "lucide-react";
 import { cn } from "@/lib/format";
+import { useAuth } from "@/lib/auth";
 import { NAV_ITEMS } from "./nav";
 
 function isActive(pathname: string, href: string) {
@@ -19,6 +20,16 @@ export function Sidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const { roles, profile } = useAuth();
+
+  // Dynamic RBAC Navigation Item Filtering
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (!item.roles || item.roles.length === 0) return true;
+    const isSuperAdmin =
+      profile?.user_type === "SUPER_ADMIN" || roles.includes("super_admin");
+    if (isSuperAdmin) return true;
+    return item.roles.some((r) => roles.includes(r));
+  });
 
   return (
     <>
@@ -63,7 +74,7 @@ export function Sidebar({
           <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Coordination
           </p>
-          {NAV_ITEMS.map((item) => {
+          {visibleNavItems.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
             return (
