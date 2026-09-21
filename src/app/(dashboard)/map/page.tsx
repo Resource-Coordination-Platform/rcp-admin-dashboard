@@ -50,7 +50,7 @@ export default function MapPage() {
     return requestList.filter((r) => {
       const matchSearch =
         !q ||
-        r.description.toLowerCase().includes(q) ||
+        r.description?.toLowerCase().includes(q) ||
         r.area?.toLowerCase().includes(q);
       return matchSearch;
     });
