@@ -10,6 +10,7 @@ import {
   useCategories,
 } from "@/lib/hooks";
 import type { HelpRequestRead } from "@/lib/types";
+import { formatRequestLocation } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, Input, Skeleton } from "@/components/ui/primitives";
 import { RequestStatusBadge, UrgencyBadge } from "@/components/ui/badges";
@@ -113,7 +114,7 @@ export default function MapPage() {
                     </div>
                     <p className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
                       <MapPin className="h-3 w-3 text-slate-400" />
-                      {r.area || "Coords set"}
+                      {formatRequestLocation(r)}
                     </p>
                   </button>
                 );

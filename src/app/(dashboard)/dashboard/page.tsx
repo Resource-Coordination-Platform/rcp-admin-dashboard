@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Bar,
@@ -29,10 +30,15 @@ import {
   useNeedVsFulfillment,
   useRequestSummary,
   useRequests,
+  useCategories,
 } from "@/lib/hooks";
 import { REQUEST_STATUS_META } from "@/lib/constants";
-import type { RequestStatus } from "@/lib/types";
-import { formatDateTime, relativeTime } from "@/lib/format";
+import type { HelpRequestRead, RequestStatus } from "@/lib/types";
+import {
+  formatDateTime,
+  formatRequestLocation,
+  relativeTime,
+} from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import {
@@ -48,6 +54,7 @@ import {
   UrgencyBadge,
 } from "@/components/ui/badges";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
+import { RequestDetailModal } from "@/components/features/request-detail-modal";
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "#94a3b8",
@@ -65,6 +72,16 @@ export default function OverviewPage() {
   const events = useEvents();
   const inventory = useInventory();
   const recent = useRequests();
+  const categories = useCategories(true);
+  const [selectedRequest, setSelectedRequest] =
+    useState<HelpRequestRead | null>(null);
+
+  const categoryById = useMemo(() => {
+    const map = new Map(
+      (categories.data ?? []).map((category) => [category.id, category]),
+    );
+    return (id: string) => map.get(id);
+  }, [categories.data]);
 
   const inventoryItems = inventory.data ?? [];
   const lowStockItems = inventoryItems.filter(
@@ -86,7 +103,6 @@ export default function OverviewPage() {
     (a, i) => a + i.quantity_available,
     0,
   );
-
 
   const pieData = (Object.entries(summaryData) as [RequestStatus, number][])
     .filter(([, v]) => v > 0)
@@ -346,16 +362,13 @@ export default function OverviewPage() {
               </THead>
               <TBody>
                 {recentRequests.map((r) => (
-                  <TR key={r.id}>
+                  <TR key={r.id} onClick={() => setSelectedRequest(r)}>
                     <TD>
                       <p className="max-w-xs truncate font-medium text-slate-900">
                         {r.description}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {r.area ??
-                          (r.latitude && r.longitude
-                            ? `${r.latitude.toFixed(3)}, ${r.longitude.toFixed(3)}`
-                            : "No area")}
+                        {formatRequestLocation(r)}
                         {r.quantity_needed
                           ? ` · qty ${r.quantity_needed}`
                           : r.needs
@@ -439,6 +452,19 @@ export default function OverviewPage() {
           </div>
         </Card>
       </div>
+
+      {selectedRequest && (
+        <RequestDetailModal
+          request={selectedRequest}
+          category={
+            selectedRequest.category_id
+              ? categoryById(selectedRequest.category_id)
+              : undefined
+          }
+          onClose={() => setSelectedRequest(null)}
+          onChanged={(updated) => setSelectedRequest(updated)}
+        />
+      )}
     </div>
   );
 }

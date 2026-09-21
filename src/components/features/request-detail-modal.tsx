@@ -39,6 +39,7 @@ import { ApiError } from "@/lib/api";
 import {
   colorFromString,
   formatDateTime,
+  formatRequestLocation,
   humanizeSkill,
   initials,
 } from "@/lib/format";
@@ -204,12 +205,7 @@ export function RequestDetailModal({
           <Detail
             icon={MapPin}
             label="Location"
-            value={
-              request.area ??
-              (request.latitude && request.longitude
-                ? `${request.latitude.toFixed(4)}, ${request.longitude.toFixed(4)}`
-                : "Not specified")
-            }
+            value={formatRequestLocation(request)}
           />
           {request.latitude && request.longitude && (
             <div className="col-span-2 text-xs">
@@ -361,7 +357,7 @@ function Detail({
   label,
   value,
 }: {
-  icon: React.ElementType;
+  icon: typeof MapPin;
   label: string;
   value: string;
 }) {

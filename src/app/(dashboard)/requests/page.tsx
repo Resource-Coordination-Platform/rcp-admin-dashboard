@@ -5,7 +5,11 @@ import { Filter, LifeBuoy, Lock, Search } from "lucide-react";
 import { useCategories, useRequests } from "@/lib/hooks";
 import { URGENCY_META } from "@/lib/constants";
 import type { HelpRequestRead, RequestStatus } from "@/lib/types";
-import { formatDateTime, relativeTime } from "@/lib/format";
+import {
+  formatDateTime,
+  formatRequestLocation,
+  relativeTime,
+} from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
 import {
   Card,
@@ -191,10 +195,7 @@ export default function RequestsPage() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {r.area ??
-                        (r.latitude && r.longitude
-                          ? `${r.latitude.toFixed(3)}, ${r.longitude.toFixed(3)}`
-                          : "No area")}
+                      {formatRequestLocation(r)}
                       {r.quantity_needed
                         ? ` · qty ${r.quantity_needed}`
                         : r.needs

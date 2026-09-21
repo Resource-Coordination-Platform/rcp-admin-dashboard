@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { HelpRequestRead } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -44,6 +45,17 @@ export function relativeTime(input: string | null | undefined): string {
   if (days < 30) return rtf.format(Math.sign(diff) * days, "day");
   const months = Math.round(days / 30);
   return rtf.format(Math.sign(diff) * months, "month");
+}
+
+export function formatRequestLocation(
+  request: Pick<HelpRequestRead, "area" | "latitude" | "longitude">,
+): string {
+  const area = request.area?.trim();
+  if (area) return area;
+  if (request.latitude != null && request.longitude != null) {
+    return `${request.latitude.toFixed(3)}, ${request.longitude.toFixed(3)}`;
+  }
+  return "No area";
 }
 
 export function humanizeSkill(skill: string): string {

@@ -10,6 +10,7 @@ import type {
   DisasterEventRead,
 } from "@/lib/types";
 import { URGENCY_META } from "@/lib/constants";
+import { formatRequestLocation } from "@/lib/format";
 import { Badge, Button } from "@/components/ui/primitives";
 import { UrgencyBadge } from "@/components/ui/badges";
 import { Boxes, MapPin, Navigation, Radio } from "lucide-react";
@@ -146,9 +147,7 @@ export default function GisMapComponent({
   }, [selectedRequest, inventory]);
 
   return (
-    <div
-      className="relative h-[650px] w-full overflow-hidden rounded-2xl border border-border shadow-lg"
-    >
+    <div className="relative h-[650px] w-full overflow-hidden rounded-2xl border border-border shadow-lg">
       <MapContainer
         center={mapCenter}
         zoom={11}
@@ -191,9 +190,7 @@ export default function GisMapComponent({
                     {r.description}
                   </p>
                   <p className="text-xs text-slate-500">
-                    📍{" "}
-                    {r.area ||
-                      `${r.latitude.toFixed(3)}, ${r.longitude.toFixed(3)}`}
+                    📍 {formatRequestLocation(r)}
                   </p>
                   <Button
                     size="sm"
@@ -244,7 +241,7 @@ export default function GisMapComponent({
               </h4>
               <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                 <Navigation className="h-3 w-3 text-brand-500" />
-                {selectedRequest.area || "Coordinates set"}
+                {formatRequestLocation(selectedRequest)}
               </p>
             </div>
             <UrgencyBadge level={selectedRequest.urgency} />
