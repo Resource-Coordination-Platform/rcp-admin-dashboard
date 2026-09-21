@@ -2,7 +2,6 @@
 // Source of truth: services/{iam,logistics,analytics,volunteer}/app/schemas.
 
 export type UserType =
-  | "SUPER_ADMIN"
   | "VOLUNTEER"
   | "VICTIM"
   | "DONATOR"
@@ -10,7 +9,6 @@ export type UserType =
   | "COORDINATOR";
 
 export type Role =
-  | "super_admin"
   | "tenant_admin"
   | "coordinator"
   | "volunteer"
@@ -38,29 +36,6 @@ export interface JwtClaims {
   jti: string;
 }
 
-export interface TenantRead {
-  id: string;
-  name: string;
-  slug: string;
-  status: "active" | "suspended" | "disabled" | string;
-  description?: string | null;
-  created_at: string;
-  updated_at?: string;
-}
-
-export interface TenantCreate {
-  name: string;
-  slug: string;
-  description?: string;
-  admin_full_name: string;
-  admin_email: string;
-  admin_password: string;
-}
-
-export interface TenantUpdateStatus {
-  status: "active" | "suspended" | "disabled";
-}
-
 export interface UserRead {
   id: string;
   tenant_id: string | null;
@@ -80,10 +55,6 @@ export interface ProfileUpdate {
 
 export interface PasswordChange {
   current_password: string;
-  new_password: string;
-}
-
-export interface AdminPasswordReset {
   new_password: string;
 }
 

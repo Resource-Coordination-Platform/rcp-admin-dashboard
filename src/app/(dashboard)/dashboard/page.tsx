@@ -16,13 +16,10 @@ import {
 import {
   ArrowRight,
   Boxes,
-  Building2,
   CheckCircle2,
   LifeBuoy,
   Package,
   Radio,
-  ShieldAlert,
-  ShieldCheck,
   TriangleAlert,
   Users,
 } from "lucide-react";
@@ -32,9 +29,7 @@ import {
   useNeedVsFulfillment,
   useRequestSummary,
   useRequests,
-  useTenants,
 } from "@/lib/hooks";
-import { useAuth } from "@/lib/auth";
 import { REQUEST_STATUS_META } from "@/lib/constants";
 import type { RequestStatus } from "@/lib/types";
 import { formatDateTime, relativeTime } from "@/lib/format";
@@ -65,16 +60,11 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function OverviewPage() {
-  const { roles, profile } = useAuth();
   const summary = useRequestSummary();
   const needVsFulfillment = useNeedVsFulfillment();
   const events = useEvents();
   const inventory = useInventory();
   const recent = useRequests();
-  const tenants = useTenants();
-
-  const isSuperAdmin =
-    profile?.user_type === "SUPER_ADMIN" || roles.includes("super_admin");
 
   const inventoryItems = inventory.data ?? [];
   const lowStockItems = inventoryItems.filter(
@@ -97,8 +87,6 @@ export default function OverviewPage() {
     0,
   );
 
-  const tenantList = tenants.data ?? [];
-  const activeTenants = tenantList.filter((t) => t.status === "active").length;
 
   const pieData = (Object.entries(summaryData) as [RequestStatus, number][])
     .filter(([, v]) => v > 0)
@@ -119,12 +107,8 @@ export default function OverviewPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={isSuperAdmin ? "Platform Operations Console" : "Overview"}
-        description={
-          isSuperAdmin
-            ? "Super Admin platform metrics, system health, and cross-tenant throughput."
-            : "The live snapshot of the organization's relief operations."
-        }
+        title="Overview"
+        description="The live snapshot of the organization's relief operations."
       />
 
       {/* Low Stock Threshold Warning Banner */}
@@ -162,81 +146,45 @@ export default function OverviewPage() {
         </div>
       )}
 
-      {/* KPI row - Role Specific Views */}
-      {isSuperAdmin ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            label="Total Platform Tenants"
-            value={tenantList.length}
-            icon={Building2}
-            accent="brand"
-            loading={tenants.isLoading}
-            hint={`${activeTenants} active organizations`}
-          />
-          <StatCard
-            label="System API Gateway"
-            value="99.9%"
-            icon={ShieldCheck}
-            accent="emerald"
-            hint="All microservices operational"
-          />
-          <StatCard
-            label="Cross-Tenant Requests"
-            value={totalRequests}
-            icon={LifeBuoy}
-            accent="violet"
-            loading={summary.isLoading}
-            hint={`${fulfilled} total fulfilled`}
-          />
-          <StatCard
-            label="Active Disaster Events"
-            value={activeEvents}
-            icon={Radio}
-            accent="amber"
-            loading={events.isLoading}
-            hint="Broadcasting to volunteers"
-          />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            label="Total requests"
-            value={totalRequests}
-            icon={LifeBuoy}
-            accent="brand"
-            loading={summary.isLoading}
-            hint={`${openRequests} currently open`}
-          />
-          <StatCard
-            label="Fulfilled"
-            value={fulfilled}
-            icon={CheckCircle2}
-            accent="emerald"
-            loading={summary.isLoading}
-            hint={
-              totalRequests
-                ? `${Math.round((fulfilled / totalRequests) * 100)}% fulfillment rate`
-                : "No requests yet"
-            }
-          />
-          <StatCard
-            label="Active events"
-            value={activeEvents}
-            icon={Radio}
-            accent="violet"
-            loading={events.isLoading}
-            hint={`${events.data?.length ?? 0} total declared`}
-          />
-          <StatCard
-            label="Stock available"
-            value={totalStock}
-            icon={Boxes}
-            accent="amber"
-            loading={inventory.isLoading}
-            hint={`${inventory.data?.length ?? 0} inventory items`}
-          />
-        </div>
-      )}
+      {/* KPI row */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          label="Total requests"
+          value={totalRequests}
+          icon={LifeBuoy}
+          accent="brand"
+          loading={summary.isLoading}
+          hint={`${openRequests} currently open`}
+        />
+        <StatCard
+          label="Fulfilled"
+          value={fulfilled}
+          icon={CheckCircle2}
+          accent="emerald"
+          loading={summary.isLoading}
+          hint={
+            totalRequests
+              ? `${Math.round((fulfilled / totalRequests) * 100)}% fulfillment rate`
+              : "No requests yet"
+          }
+        />
+        <StatCard
+          label="Active events"
+          value={activeEvents}
+          icon={Radio}
+          accent="violet"
+          loading={events.isLoading}
+          hint={`${events.data?.length ?? 0} total declared`}
+        />
+        <StatCard
+          label="Stock available"
+          value={totalStock}
+          icon={Boxes}
+          accent="amber"
+          loading={inventory.isLoading}
+          hint={`${inventory.data?.length ?? 0} inventory items`}
+        />
+      </div>
 
       {/* Charts */}
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -83,6 +83,21 @@ export default function GisMapComponent({
   onSelectRequest,
   onRequestAllocate,
 }: GisMapProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (containerRef.current) {
+        const container = containerRef.current.querySelector(
+          ".leaflet-container",
+        ) as (HTMLElement & { _leaflet_id?: number | null }) | null;
+        if (container) {
+          container._leaflet_id = null;
+        }
+      }
+    };
+  }, []);
+
   // Center of Sri Lanka by default
   const defaultCenter: [number, number] = [6.9271, 79.8612];
 
@@ -146,7 +161,10 @@ export default function GisMapComponent({
   }, [selectedRequest, inventory]);
 
   return (
-    <div className="relative h-[650px] w-full overflow-hidden rounded-2xl border border-border shadow-lg">
+    <div
+      ref={containerRef}
+      className="relative h-[650px] w-full overflow-hidden rounded-2xl border border-border shadow-lg"
+    >
       <MapContainer
         center={mapCenter}
         zoom={11}

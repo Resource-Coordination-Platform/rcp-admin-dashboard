@@ -1,6 +1,5 @@
 import {
   Boxes,
-  Building2,
   ClipboardList,
   FileText,
   LayoutDashboard,
@@ -12,17 +11,14 @@ import {
   Tags,
   Users,
   UsersRound,
-  UserCheck,
 } from "lucide-react";
 
-import type { Role } from "@/lib/types";
 
 export interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
   description: string;
-  roles?: Role[];
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -37,20 +33,6 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/map",
     icon: MapPin,
     description: "Spatial command center",
-  },
-  {
-    label: "Tenants",
-    href: "/tenants",
-    icon: Building2,
-    description: "Platform organizations",
-    roles: ["super_admin"],
-  },
-  {
-    label: "Global Users",
-    href: "/superadmin/users",
-    icon: UserCheck,
-    description: "Cross-tenant security",
-    roles: ["super_admin"],
   },
   {
     label: "Help Requests",
