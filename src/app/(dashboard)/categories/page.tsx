@@ -476,6 +476,7 @@ function FormBuilder({
           Extra questions asked when someone submits a request in this category.
           Answers are validated against these definitions server side, so a
           request can never carry a field you did not define.
+          Field name will be auto generated and save on system.
         </p>
         <Button
           size="sm"
@@ -592,74 +593,34 @@ function FieldEditor({
         </button>
       </div>
 
-      <div className="mt-2.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-        <label className="block">
-          <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-            Field key
-          </span>
-          <Input
-            value={field.key}
-            onChange={(e) => onPatch({ key: e.target.value, keyAuto: false })}
-            placeholder="household_size"
-            className="h-8 font-mono text-xs"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-            Help text
-          </span>
-          <Input
-            value={field.helpText}
-            onChange={(e) => onPatch({ helpText: e.target.value })}
-            placeholder="Shown under the input"
-            className="h-8 text-xs"
-          />
-        </label>
-
-        {isNumeric(field.type) && (
-          <>
-            <label className="block">
-              <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                Minimum
-              </span>
-              <Input
-                type="number"
-                value={field.min}
-                onChange={(e) => onPatch({ min: e.target.value })}
-                placeholder="No minimum"
-                className="h-8 text-xs"
-              />
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                Maximum
-              </span>
-              <Input
-                type="number"
-                value={field.max}
-                onChange={(e) => onPatch({ max: e.target.value })}
-                placeholder="No maximum"
-                className="h-8 text-xs"
-              />
-            </label>
-          </>
-        )}
-
-        {isTextual(field.type) && cap !== undefined && (
+      {isNumeric(field.type) && (
+        <div className="mt-2.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           <label className="block">
             <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-              Max length (up to {cap})
+              Minimum
             </span>
             <Input
               type="number"
-              value={field.maxLength}
-              onChange={(e) => onPatch({ maxLength: e.target.value })}
-              placeholder={String(cap)}
+              value={field.min}
+              onChange={(e) => onPatch({ min: e.target.value })}
+              placeholder="No minimum"
               className="h-8 text-xs"
             />
           </label>
-        )}
-      </div>
+          <label className="block">
+            <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Maximum
+            </span>
+            <Input
+              type="number"
+              value={field.max}
+              onChange={(e) => onPatch({ max: e.target.value })}
+              placeholder="No maximum"
+              className="h-8 text-xs"
+            />
+          </label>
+        </div>
+      )}
 
       {isChoice(field.type) && (
         <OptionsEditor
