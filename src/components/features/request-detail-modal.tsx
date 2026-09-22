@@ -17,6 +17,7 @@ import {
   useInventory,
   useReserveStock,
   useUpdateRequestStatus,
+  useDeleteRequest,
   useVolunteerDirectory,
   useVolunteerSkills,
 } from "@/lib/hooks";
@@ -69,6 +70,7 @@ export function RequestDetailModal({
 }) {
   const toast = useToast();
   const updateStatus = useUpdateRequestStatus();
+  const deleteRequest = useDeleteRequest();
   const [showDispatch, setShowDispatch] = useState(false);
   const [showStockAllocation, setShowStockAllocation] = useState(false);
 
@@ -117,6 +119,20 @@ export function RequestDetailModal({
     }
   }
 
+  async function handleDelete() {
+    if (!window.confirm("Are you sure you want to delete this request?")) return;
+    try {
+      await deleteRequest.mutateAsync(request.id);
+      toast.success("Request deleted", "The request has been removed.");
+      onClose();
+    } catch (err) {
+      toast.error(
+        "Could not delete request",
+        err instanceof ApiError ? err.detail : "Unexpected error"
+      );
+    }
+  }
+
   return (
     <Modal
       open
@@ -139,6 +155,9 @@ export function RequestDetailModal({
           )}
           <Button variant="outline" onClick={onClose}>
             Close
+          </Button>
+          <Button variant="danger" onClick={handleDelete} loading={deleteRequest.isPending}>
+            Delete Request
           </Button>
           {nextStatuses.map((s) => (
             <Button

@@ -131,7 +131,9 @@ export function useRequests(status?: RequestStatus) {
   return useQuery({
     queryKey: qk.requests(status),
     queryFn: () =>
-      api.get<HelpRequestRead[]>("/api/volunteer/requests/pending"),
+      api.get<HelpRequestRead[]>("/api/volunteer/requests", {
+        query: status ? { status } : undefined,
+      }),
   });
 }
 
@@ -141,7 +143,19 @@ export function useUpdateRequestStatus() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: RequestStatus }) =>
-      api.patch<HelpRequestRead>(`/api/requests/${id}/status`, { status }),
+      api.patch<HelpRequestRead>(`/api/volunteer/requests/${id}/status`, { status }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["requests"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+    },
+  });
+}
+
+export function useDeleteRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.del(`/api/volunteer/requests/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["requests"] });
       qc.invalidateQueries({ queryKey: ["reports"] });
@@ -203,8 +217,15 @@ export function useNeedVsFulfillment() {
 export function useRequestSummary() {
   return useQuery({
     queryKey: qk.requestSummary,
-    queryFn: () =>
-      api.get<RequestStatusSummary>("/api/reports/request-summary"),
+    queryFn: async () => {
+      const requests = await api.get<HelpRequestRead[]>("/api/volunteer/requests");
+      const summary: RequestStatusSummary = {};
+      for (const req of requests) {
+        const status = (req.status || "pending").toLowerCase() as RequestStatus;
+        summary[status] = (summary[status] || 0) + 1;
+      }
+      return summary;
+    },
   });
 }
 

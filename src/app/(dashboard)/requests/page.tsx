@@ -67,18 +67,36 @@ export default function RequestsPage() {
           (r.urgency ? String(r.urgency).toLowerCase() : "medium") ===
             urgencyFilter;
 
-        const matchCategory =
-          categoryFilter === "all" || r.category_id === categoryFilter;
+        const matchCategory = () => {
+          if (categoryFilter === "all") return true;
+          if (r.category_id === categoryFilter) return true;
+          
+          const catName = categoryName(categoryFilter).toLowerCase();
+          const matchesNeeds = r.needs && (
+            Array.isArray(r.needs)
+              ? r.needs.some(n => n.toLowerCase().includes(catName) || catName.includes(n.toLowerCase().replace(/_/g, " ")))
+              : typeof r.needs === "string" && r.needs.toLowerCase().includes(catName)
+          );
+          const matchesDisaster = r.disaster_type && r.disaster_type.toLowerCase().includes(catName);
+          
+          return matchesNeeds || matchesDisaster;
+        };
 
         const matchSearch =
           !q ||
-          r.description.toLowerCase().includes(q) ||
+          r.description?.toLowerCase().includes(q) ||
           r.area?.toLowerCase().includes(q) ||
+          r.disaster_type?.toLowerCase().includes(q) ||
+          (r.needs && (
+            Array.isArray(r.needs)
+              ? r.needs.some(n => n.toLowerCase().includes(q) || n.toLowerCase().replace(/_/g, " ").includes(q))
+              : typeof r.needs === "string" && r.needs.toLowerCase().includes(q)
+          )) ||
           categoryName(r.category_id ?? "")
             .toLowerCase()
             .includes(q);
 
-        return matchStatus && matchUrgency && matchCategory && matchSearch;
+        return matchStatus && matchUrgency && matchCategory() && matchSearch;
       })
       .sort(
         (a, b) =>
