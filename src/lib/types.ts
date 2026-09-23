@@ -341,7 +341,7 @@ export interface DisasterAlertRead {
   title: string;
   message: string;
   severity: AlertSeverity;
-  is_active: boolean;
+  status: "BROADCASTING" | "CLOSED";
   created_by?: string;
   created_at: string;
 }
