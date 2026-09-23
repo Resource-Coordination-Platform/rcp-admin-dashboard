@@ -356,3 +356,19 @@ export interface ApiError {
   status: number;
   detail: string;
 }
+
+export type AuditCategory = "INVENTORY" | "VERIFICATION" | "DISPATCH" | "TENANT";
+
+export type AuditStatus = "SUCCESS" | "WARNING" | "FAILED";
+
+export interface AuditLogRead {
+  id: string;
+  tenant_id: string | null;
+  action: string;
+  actor: string;
+  role: string;
+  details: string;
+  category: AuditCategory;
+  status: AuditStatus;
+  created_at: string;
+}

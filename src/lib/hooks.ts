@@ -22,9 +22,11 @@ import type {
   UserRead,
   VolunteerDirectoryPage,
   VolunteerDirectoryQuery,
+  AuditLogRead,
 } from "./types";
 
 export const qk = {
+  auditLogs: ["audit-logs"] as const,
   alerts: ["alerts"] as const,
   categories: (includeInactive = false) =>
     ["categories", includeInactive ? "with-inactive" : "active"] as const,
@@ -317,5 +319,13 @@ export function useBroadcastAlert() {
     mutationFn: (body: DisasterAlertCreate) =>
       api.post<DisasterAlertRead>("/api/alerts", body),
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.alerts }),
+  });
+}
+
+// ---- Audit Logs ----
+export function useAuditLogs() {
+  return useQuery({
+    queryKey: qk.auditLogs,
+    queryFn: () => api.get<AuditLogRead[]>("/api/audit-logs"),
   });
 }

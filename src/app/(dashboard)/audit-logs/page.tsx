@@ -9,6 +9,7 @@ import {
   UserCheck,
   Boxes,
   AlertCircle,
+  Download,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import {
@@ -17,72 +18,22 @@ import {
   Input,
   Select,
   Badge,
+  Button,
 } from "@/components/ui/primitives";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { formatDateTime, relativeTime } from "@/lib/format";
-
-interface AuditLogEntry {
-  id: string;
-  action: string;
-  actor: string;
-  role: string;
-  details: string;
-  category: "INVENTORY" | "VERIFICATION" | "DISPATCH" | "TENANT";
-  timestamp: string;
-  status: "SUCCESS" | "WARNING" | "FAILED";
-}
-
-// Sample audit entries matching coordinator activities
-const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
-  {
-    id: "log-101",
-    action: "STOCK_RESERVED",
-    actor: "Coordinator Perera",
-    role: "COORDINATOR",
-    details: "Reserved 500L Clean Drinking Water for Request #req-889",
-    category: "INVENTORY",
-    timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-    status: "SUCCESS",
-  },
-  {
-    id: "log-102",
-    action: "REQUEST_VERIFIED",
-    actor: "Admin Silva",
-    role: "TENANT_ADMIN",
-    details: "Verified emergency flood relief request in Kolonnawa area",
-    category: "VERIFICATION",
-    timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-    status: "SUCCESS",
-  },
-  {
-    id: "log-103",
-    action: "VOLUNTEER_DISPATCHED",
-    actor: "Coordinator Perera",
-    role: "COORDINATOR",
-    details: "Assigned Task #task-402 to Volunteer Kasun Bandara",
-    category: "DISPATCH",
-    timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-    status: "SUCCESS",
-  },
-  {
-    id: "log-104",
-    action: "TENANT_ONBOARDED",
-    actor: "Super Admin System",
-    role: "SUPER_ADMIN",
-    details: "Onboarded tenant organization 'Red Cross Colombo'",
-    category: "TENANT",
-    timestamp: new Date(Date.now() - 1000 * 60 * 300).toISOString(),
-    status: "SUCCESS",
-  },
-];
+import { useAuditLogs } from "@/lib/hooks";
 
 export default function AuditLogsPage() {
+  const { data: serverLogs, isLoading } = useAuditLogs();
+  const logs = serverLogs || [];
+
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
   const filteredLogs = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return INITIAL_AUDIT_LOGS.filter((log) => {
+    return logs.filter((log) => {
       const matchCat =
         categoryFilter === "all" || log.category === categoryFilter;
       const matchSearch =
@@ -92,7 +43,32 @@ export default function AuditLogsPage() {
         log.details.toLowerCase().includes(q);
       return matchCat && matchSearch;
     });
-  }, [search, categoryFilter]);
+  }, [logs, search, categoryFilter]);
+
+  const exportToCSV = () => {
+    if (filteredLogs.length === 0) return;
+    const headers = ["Timestamp", "Category", "Action", "Actor", "Role", "Details", "Status"];
+    const rows = filteredLogs.map(log => [
+      new Date(log.created_at).toLocaleString(),
+      log.category,
+      log.action,
+      log.actor,
+      log.role,
+      `"${log.details.replace(/"/g, '""')}"`, // Handle commas in details
+      log.status
+    ]);
+    
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+      
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "audit_logs.csv");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
 
   return (
     <div>
@@ -127,6 +103,17 @@ export default function AuditLogsPage() {
               className="pl-9 text-xs"
             />
           </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportToCSV}
+            disabled={filteredLogs.length === 0}
+            className="w-full sm:w-auto"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Export to CSV
+          </Button>
         </div>
 
         {filteredLogs.length === 0 ? (
@@ -185,9 +172,9 @@ export default function AuditLogsPage() {
                   <TD className="text-right">
                     <span
                       className="text-xs text-muted-foreground"
-                      title={formatDateTime(log.timestamp)}
+                      title={formatDateTime(log.created_at)}
                     >
-                      {relativeTime(log.timestamp)}
+                      {relativeTime(log.created_at)}
                     </span>
                   </TD>
                 </TR>
