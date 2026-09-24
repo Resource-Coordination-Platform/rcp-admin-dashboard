@@ -10,7 +10,7 @@ import {
   Users,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { useRegisterCoordinator } from "@/lib/hooks";
+import { useCoordinators, useRegisterCoordinator } from "@/lib/hooks";
 import { ApiError } from "@/lib/api";
 import { colorFromString, initials, relativeTime } from "@/lib/format";
 import type { UserRead } from "@/lib/types";
@@ -23,6 +23,7 @@ import {
   EmptyState,
   Field,
   Input,
+  Skeleton,
 } from "@/components/ui/primitives";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
@@ -30,7 +31,7 @@ import { useToast } from "@/components/ui/toast";
 export default function TeamPage() {
   const { profile } = useAuth();
   const [open, setOpen] = useState(false);
-  const [added, setAdded] = useState<UserRead[]>([]);
+  const { data: coordinators, isLoading } = useCoordinators();
 
   return (
     <div>
@@ -81,10 +82,16 @@ export default function TeamPage() {
 
       <Card>
         <CardHeader
-          title="Coordinators added this session"
-          description="The directory API is not exposed to the portal; newly-created coordinators appear here until you reload."
+          title="Team Members"
+          description="All coordinators and admins in your organization."
         />
-        {added.length === 0 ? (
+        {isLoading ? (
+          <div className="space-y-3 p-5">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        ) : !coordinators || coordinators.length === 0 ? (
           <EmptyState
             icon={Users}
             title="No coordinators added yet"
@@ -101,7 +108,7 @@ export default function TeamPage() {
           />
         ) : (
           <ul className="divide-y divide-border">
-            {added.map((u) => (
+            {coordinators.map((u) => (
               <li key={u.id} className="flex items-center gap-3 px-5 py-4">
                 <div
                   className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-semibold text-white"
@@ -128,9 +135,11 @@ export default function TeamPage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <Badge tone="purple">Coordinator</Badge>
+                  <Badge tone={u.user_type === "TENANT_ADMIN" ? "brand" : "purple"}>
+                    {u.user_type === "TENANT_ADMIN" ? "Admin" : "Coordinator"}
+                  </Badge>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {relativeTime(u.created_at)}
+                    Joined {relativeTime(u.created_at)}
                   </p>
                 </div>
               </li>
@@ -143,7 +152,7 @@ export default function TeamPage() {
         <AddCoordinatorModal
           tenantSlug={profile.tenantSlug}
           onClose={() => setOpen(false)}
-          onCreated={(u) => setAdded((prev) => [u, ...prev])}
+          onCreated={() => {}}
         />
       )}
     </div>

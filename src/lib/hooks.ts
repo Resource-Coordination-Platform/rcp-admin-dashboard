@@ -317,7 +317,15 @@ export function useCloseEvent() {
 }
 
 // ---- Team (register coordinator) ----
+export function useCoordinators() {
+  return useQuery({
+    queryKey: ["coordinators"],
+    queryFn: () => api.get<UserRead[]>("/api/auth/tenants/me/users"),
+  });
+}
+
 export function useRegisterCoordinator(tenantSlug: string) {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: {
       email: string;
@@ -330,6 +338,9 @@ export function useRegisterCoordinator(tenantSlug: string) {
         { ...body, user_type: "COORDINATOR" },
         { auth: false },
       ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["coordinators"] });
+    },
   });
 }
 
