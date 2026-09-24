@@ -194,6 +194,24 @@ export function useDeleteRequest() {
 }
 
 // ---- Dispatch ----
+export function useTasks() {
+  return useQuery({
+    queryKey: ["tasks"],
+    queryFn: () => api.get<any[]>("/api/volunteers/tasks"),
+  });
+}
+
+export function useUpdateTaskStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ taskId, status }: { taskId: string; status: string }) =>
+      api.patch(`/api/volunteers/tasks/${taskId}/status`, null, {
+        query: { new_status: status },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+  });
+}
+
 export function useDispatchTask() {
   return useMutation({
     mutationFn: (body: DispatchTaskCreate) =>

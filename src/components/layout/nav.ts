@@ -9,6 +9,7 @@ import {
   Megaphone,
   Radio,
   Tags,
+  Truck,
   Users,
   UsersRound,
 } from "lucide-react";
@@ -80,7 +81,13 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Volunteers",
     href: "/volunteers",
     icon: UsersRound,
-    description: "Find & dispatch",
+    description: "Find available",
+  },
+  {
+    label: "Dispatch",
+    href: "/dispatch",
+    icon: Truck,
+    description: "Task assignment",
   },
   {
     label: "Team",
