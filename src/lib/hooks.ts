@@ -159,7 +159,7 @@ export function useUpdateRequestStatus() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["requests"] });
       qc.invalidateQueries({ queryKey: ["reports"] });
-      qc.invalidateQueries({ queryKey: ["audit-logs"] });
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["audit-logs"] }), 1500);
     },
   });
 }
@@ -176,7 +176,7 @@ export function useClaimRequest() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["requests"] });
       qc.invalidateQueries({ queryKey: ["global-requests"] });
-      qc.invalidateQueries({ queryKey: ["audit-logs"] });
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["audit-logs"] }), 1500);
     },
   });
 }
@@ -340,6 +340,42 @@ export function useRegisterCoordinator(tenantSlug: string) {
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["coordinators"] });
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["audit-logs"] }), 1500);
+    },
+  });
+}
+
+export function useUpdateCoordinator() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      userId,
+      full_name,
+      phone,
+    }: {
+      userId: string;
+      full_name?: string;
+      phone?: string;
+    }) =>
+      api.patch<UserRead>(`/api/auth/tenants/me/users/${userId}`, {
+        full_name,
+        phone,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["coordinators"] });
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["audit-logs"] }), 1500);
+    },
+  });
+}
+
+export function useDeleteCoordinator() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      api.del(`/api/auth/tenants/me/users/${userId}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["coordinators"] });
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["audit-logs"] }), 1500);
     },
   });
 }
