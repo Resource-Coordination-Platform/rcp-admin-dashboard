@@ -341,7 +341,7 @@ export interface DisasterAlertRead {
   title: string;
   message: string;
   severity: AlertSeverity;
-  is_active: boolean;
+  status: "BROADCASTING" | "CLOSED";
   created_by?: string;
   created_at: string;
 }
@@ -355,4 +355,20 @@ export interface DisasterAlertCreate {
 export interface ApiError {
   status: number;
   detail: string;
+}
+
+export type AuditCategory = "INVENTORY" | "VERIFICATION" | "DISPATCH" | "TENANT";
+
+export type AuditStatus = "SUCCESS" | "WARNING" | "FAILED";
+
+export interface AuditLogRead {
+  id: string;
+  tenant_id: string | null;
+  action: string;
+  actor: string;
+  role: string;
+  details: string;
+  category: AuditCategory;
+  status: AuditStatus;
+  created_at: string;
 }

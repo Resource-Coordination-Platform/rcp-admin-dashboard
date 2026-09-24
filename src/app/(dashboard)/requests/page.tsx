@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Filter, LifeBuoy, Lock, Search } from "lucide-react";
-import { useCategories, useRequests } from "@/lib/hooks";
+import { useCategories, useRequests, useGlobalRequests } from "@/lib/hooks";
 import { URGENCY_META } from "@/lib/constants";
 import type { HelpRequestRead, RequestStatus } from "@/lib/types";
 import {
@@ -21,6 +21,7 @@ import {
 import { RequestStatusBadge, UrgencyBadge } from "@/components/ui/badges";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { RequestDetailModal } from "@/components/features/request-detail-modal";
+import { ClaimRequestModal } from "@/components/features/claim-request-modal";
 
 const FILTERS: { label: string; value: RequestStatus | "all" }[] = [
   { label: "All", value: "all" },
@@ -33,16 +34,21 @@ const FILTERS: { label: string; value: RequestStatus | "all" }[] = [
 ];
 
 export default function RequestsPage() {
+  const [activeTab, setActiveTab] = useState<"tenant" | "global">("tenant");
   const [filter, setFilter] = useState<RequestStatus | "all">("all");
   const [urgencyFilter, setUrgencyFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<HelpRequestRead | null>(null);
+  
+  const [selectedTenantReq, setSelectedTenantReq] = useState<HelpRequestRead | null>(null);
+  const [selectedGlobalReq, setSelectedGlobalReq] = useState<HelpRequestRead | null>(null);
 
-  const { data, isLoading } = useRequests(
-    filter === "all" ? undefined : filter,
-  );
+  const tenantRequests = useRequests(filter === "all" ? undefined : filter);
+  const globalRequests = useGlobalRequests(filter === "all" ? undefined : filter);
   const categories = useCategories(true);
+
+  const isLoading = activeTab === "tenant" ? tenantRequests.isLoading : globalRequests.isLoading;
+  const activeData = activeTab === "tenant" ? tenantRequests.data : globalRequests.data;
 
   const { categoryById, categoryName } = useMemo(() => {
     const map = new Map((categories.data ?? []).map((c) => [c.id, c]));
@@ -53,7 +59,7 @@ export default function RequestsPage() {
   }, [categories.data]);
 
   const rows = useMemo(() => {
-    const list = data ?? [];
+    const list = activeData ?? [];
     const q = search.trim().toLowerCase();
 
     return list
@@ -104,7 +110,7 @@ export default function RequestsPage() {
             URGENCY_META[a.urgency ?? "medium"].rank ||
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       );
-  }, [data, filter, urgencyFilter, categoryFilter, search, categoryName]);
+  }, [activeData, filter, urgencyFilter, categoryFilter, search, categoryName]);
 
   return (
     <div>
@@ -113,9 +119,39 @@ export default function RequestsPage() {
         description="Triage incoming needs, advance them through the pipeline, and dispatch volunteers."
       />
 
+      {/* Tabs */}
+      <div className="flex border-b border-border mb-4">
+        <button
+          onClick={() => {
+            setActiveTab("tenant");
+            setFilter("all");
+          }}
+          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+            activeTab === "tenant"
+              ? "border-brand-600 text-brand-600"
+              : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+          }`}
+        >
+          My Tenant Requests
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab("global");
+            setFilter("all");
+          }}
+          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+            activeTab === "global"
+              ? "border-brand-600 text-brand-600"
+              : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+          }`}
+        >
+          Global Requests (Victim App)
+        </button>
+      </div>
+
       <Card>
         {/* Toolbar */}
-        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-border p-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-wrap items-center gap-1.5">
             {FILTERS.map((f) => {
               const active = filter === f.value;
@@ -189,7 +225,7 @@ export default function RequestsPage() {
                   ? "No requests yet"
                   : `No ${filter.replace("_", " ")} requests`
             }
-            description="Requests submitted by victims"
+            description={activeTab === "tenant" ? "Requests managed by your logistics team" : "Requests submitted by victims globally"}
           />
         ) : (
           <Table>
@@ -202,11 +238,17 @@ export default function RequestsPage() {
             </THead>
             <TBody>
               {rows.map((r) => (
-                <TR key={r.id} onClick={() => setSelected(r)}>
+                <TR key={r.id} onClick={() => {
+                  if (activeTab === "tenant") {
+                    setSelectedTenantReq(r);
+                  } else {
+                    setSelectedGlobalReq(r);
+                  }
+                }}>
                   <TD>
                     <div className="flex items-center gap-2">
                       <p className="max-w-sm truncate font-medium text-slate-900">
-                        {r.description}
+                        {r.description || (r as any).needs?.join(", ") || "No description"}
                       </p>
                       {r.is_sensitive && (
                         <Lock className="h-3.5 w-3.5 shrink-0 text-amber-500" />
@@ -216,8 +258,8 @@ export default function RequestsPage() {
                       {formatRequestLocation(r)}
                       {r.quantity_needed
                         ? ` · qty ${r.quantity_needed}`
-                        : r.needs
-                          ? ` · ${Array.isArray(r.needs) ? r.needs.join(", ") : r.needs}`
+                        : (r as any).needs
+                          ? ` · ${Array.isArray((r as any).needs) ? (r as any).needs.join(", ") : (r as any).needs}`
                           : ""}
                     </p>
                   </TD>
@@ -246,16 +288,28 @@ export default function RequestsPage() {
         )}
       </Card>
 
-      {selected && (
+      {selectedTenantReq && (
         <RequestDetailModal
-          request={selected}
+          request={selectedTenantReq}
           category={
-            selected.category_id
-              ? categoryById(selected.category_id)
+            selectedTenantReq.category_id
+              ? categoryById(selectedTenantReq.category_id)
               : undefined
           }
-          onClose={() => setSelected(null)}
-          onChanged={(updated) => setSelected(updated)}
+          onClose={() => setSelectedTenantReq(null)}
+          onChanged={(updated) => setSelectedTenantReq(updated)}
+        />
+      )}
+
+      {selectedGlobalReq && (
+        <ClaimRequestModal
+          request={selectedGlobalReq}
+          isOpen={!!selectedGlobalReq}
+          onClose={() => setSelectedGlobalReq(null)}
+          onSuccess={() => {
+             setSelectedGlobalReq(null);
+             setActiveTab("tenant");
+          }}
         />
       )}
     </div>

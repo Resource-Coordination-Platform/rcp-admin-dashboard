@@ -7,7 +7,11 @@ import {
   Radio,
   Search,
   ShieldAlert,
+  Trash2,
+  CheckCircle,
 } from "lucide-react";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 import { useAlerts } from "@/lib/hooks";
 import type { AlertSeverity, DisasterAlertRead } from "@/lib/types";
 import { formatDateTime, relativeTime } from "@/lib/format";
@@ -24,45 +28,32 @@ import {
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { BroadcastAlertModal } from "@/components/features/broadcast-alert-modal";
 
-const MOCK_ALERTS: DisasterAlertRead[] = [
-  {
-    id: "alt-001",
-    title: "Kelani River Basin Evacuation Warning",
-    message:
-      "River water levels have reached critical threshold (Level 2). Evacuation support units deployed in Kolonnawa.",
-    severity: "HIGH",
-    is_active: true,
-    created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-  },
-  {
-    id: "alt-002",
-    title: "Heavy Rainfall Advisory - Western Province",
-    message:
-      "Heavy rainfall exceeding 100mm expected in Colombo and Gampaha districts over next 24 hours.",
-    severity: "MEDIUM",
-    is_active: true,
-    created_at: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
-  },
-  {
-    id: "alt-003",
-    title: "Relief Supply Hub Location Update",
-    message:
-      "New medical supply distribution camp opened at Kaduwela Central College grounds.",
-    severity: "LOW",
-    is_active: true,
-    created_at: new Date(Date.now() - 1000 * 60 * 600).toISOString(),
-  },
-];
+
 
 export default function AlertsPage() {
+  const queryClient = useQueryClient();
   const { data: serverAlerts, isLoading } = useAlerts();
+
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: "BROADCASTING" | "CLOSED" }) => {
+      return api.patch(`/api/alerts/${id}/status`, { status });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["alerts"] }),
+  });
+
+  const deleteAlert = useMutation({
+    mutationFn: async (id: string) => {
+      return api.del(`/api/alerts/${id}`);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["alerts"] }),
+  });
 
   const [search, setSearch] = useState("");
   const [severityFilter, setSeverityFilter] = useState<string>("all");
   const [showModal, setShowModal] = useState(false);
 
   const alertList = useMemo(() => {
-    return serverAlerts && serverAlerts.length > 0 ? serverAlerts : MOCK_ALERTS;
+    return serverAlerts || [];
   }, [serverAlerts]);
 
   const filteredAlerts = useMemo(() => {
@@ -135,8 +126,9 @@ export default function AlertsPage() {
             <THead>
               <TH>Severity</TH>
               <TH>Alert Title & Message</TH>
-              <TH>Tenant Scope</TH>
+              <TH>Status</TH>
               <TH className="text-right">Published</TH>
+              <TH className="text-right">Actions</TH>
             </THead>
             <TBody>
               {filteredAlerts.map((a) => (
@@ -162,7 +154,14 @@ export default function AlertsPage() {
                   </TD>
 
                   <TD>
-                    <Badge tone="purple">Effective Tenant Scope</Badge>
+                    {a.status === "BROADCASTING" ? (
+                      <Badge tone="success" className="font-bold animate-pulse">
+                        <Radio className="mr-1 h-3.5 w-3.5" />
+                        BROADCASTING
+                      </Badge>
+                    ) : (
+                      <Badge tone="neutral">CLOSED</Badge>
+                    )}
                   </TD>
 
                   <TD className="text-right">
@@ -172,6 +171,34 @@ export default function AlertsPage() {
                     >
                       {relativeTime(a.created_at)}
                     </span>
+                  </TD>
+
+                  <TD className="text-right">
+                    <div className="flex justify-end gap-2">
+                      {a.status === "BROADCASTING" ? (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => updateStatus.mutate({ id: a.id, status: "CLOSED" })}
+                          disabled={updateStatus.isPending}
+                        >
+                          <CheckCircle className="h-3.5 w-3.5" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => {
+                            if (window.confirm("Are you sure you want to delete this closed alert?")) {
+                              deleteAlert.mutate(a.id);
+                            }
+                          }}
+                          disabled={deleteAlert.isPending}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
                   </TD>
                 </TR>
               ))}

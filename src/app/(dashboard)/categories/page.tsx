@@ -20,6 +20,7 @@ import {
   useDeactivateCategory,
   useUpdateCategory,
 } from "@/lib/hooks";
+import { useAuth } from "@/lib/auth";
 import type {
   FormFieldType,
   RequestStatus,
@@ -75,6 +76,8 @@ export default function CategoriesPage() {
   const { data, isLoading } = useCategories(showInactive);
   const [editing, setEditing] = useState<ResourceCategoryRead | null>(null);
   const [creating, setCreating] = useState(false);
+  const { profile } = useAuth();
+  const isAdmin = profile?.user_type === "TENANT_ADMIN";
 
   const categories = data ?? [];
 
@@ -94,10 +97,12 @@ export default function CategoriesPage() {
               />
               Show retired
             </label>
-            <Button onClick={() => setCreating(true)}>
-              <Plus className="h-4 w-4" />
-              New category
-            </Button>
+            {isAdmin && (
+              <Button onClick={() => setCreating(true)}>
+                <Plus className="h-4 w-4" />
+                New category
+              </Button>
+            )}
           </div>
         }
       />
@@ -115,10 +120,12 @@ export default function CategoriesPage() {
             title="No categories yet"
             description="Categories group inventory and requests - e.g. Water, Medical, Emergency Shelter, Food Bank - and each one carries its own intake form and approval steps."
             action={
-              <Button onClick={() => setCreating(true)}>
-                <Plus className="h-4 w-4" />
-                Create your first category
-              </Button>
+              isAdmin ? (
+                <Button onClick={() => setCreating(true)}>
+                  <Plus className="h-4 w-4" />
+                  Create your first category
+                </Button>
+              ) : undefined
             }
           />
         </Card>
@@ -129,6 +136,7 @@ export default function CategoriesPage() {
               key={c.id}
               category={c}
               onEdit={() => setEditing(c)}
+              isAdmin={isAdmin}
             />
           ))}
         </div>
@@ -145,9 +153,11 @@ export default function CategoriesPage() {
 function CategoryCard({
   category: c,
   onEdit,
+  isAdmin,
 }: {
   category: ResourceCategoryRead;
   onEdit: () => void;
+  isAdmin: boolean;
 }) {
   const fieldCount = c.form_schema?.length ?? 0;
   return (
@@ -165,13 +175,15 @@ function CategoryCard({
           <Badge tone={c.is_active ? "success" : "neutral"} dot>
             {c.is_active ? "Active" : "Retired"}
           </Badge>
-          <button
-            onClick={onEdit}
-            aria-label={`Edit ${c.name}`}
-            className="focus-ring rounded-lg p-1.5 text-slate-400 opacity-0 transition hover:bg-slate-100 hover:text-slate-700 focus:opacity-100 group-hover:opacity-100"
-          >
-            <Pencil className="h-4 w-4" />
-          </button>
+          {isAdmin && (
+            <button
+              onClick={onEdit}
+              aria-label={`Edit ${c.name}`}
+              className="focus-ring rounded-lg p-1.5 text-slate-400 opacity-0 transition hover:bg-slate-100 hover:text-slate-700 focus:opacity-100 group-hover:opacity-100"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 

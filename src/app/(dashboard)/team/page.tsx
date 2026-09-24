@@ -8,9 +8,16 @@ import {
   ShieldCheck,
   UserPlus,
   Users,
+  Edit2,
+  Trash2,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { useRegisterCoordinator } from "@/lib/hooks";
+import { 
+  useCoordinators, 
+  useRegisterCoordinator,
+  useUpdateCoordinator,
+  useDeleteCoordinator,
+} from "@/lib/hooks";
 import { ApiError } from "@/lib/api";
 import { colorFromString, initials, relativeTime } from "@/lib/format";
 import type { UserRead } from "@/lib/types";
@@ -23,6 +30,7 @@ import {
   EmptyState,
   Field,
   Input,
+  Skeleton,
 } from "@/components/ui/primitives";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
@@ -30,7 +38,14 @@ import { useToast } from "@/components/ui/toast";
 export default function TeamPage() {
   const { profile } = useAuth();
   const [open, setOpen] = useState(false);
-  const [added, setAdded] = useState<UserRead[]>([]);
+  const [editUser, setEditUser] = useState<UserRead | null>(null);
+  const [deleteUser, setDeleteUser] = useState<UserRead | null>(null);
+  const { data: coordinators, isLoading } = useCoordinators();
+  const isAdmin = profile?.user_type === "TENANT_ADMIN";
+  
+  const updateMutation = useUpdateCoordinator();
+  const deleteMutation = useDeleteCoordinator();
+  const toast = useToast();
 
   return (
     <div>
@@ -38,10 +53,12 @@ export default function TeamPage() {
         title="Team"
         description="Provision coordinators who help triage requests, manage inventory and dispatch volunteers."
         actions={
-          <Button onClick={() => setOpen(true)} disabled={!profile?.tenantSlug}>
-            <UserPlus className="h-4 w-4" />
-            Add coordinator
-          </Button>
+          isAdmin ? (
+            <Button onClick={() => setOpen(true)} disabled={!profile?.tenantSlug}>
+              <UserPlus className="h-4 w-4" />
+              Add coordinator
+            </Button>
+          ) : undefined
         }
       />
 
@@ -81,27 +98,35 @@ export default function TeamPage() {
 
       <Card>
         <CardHeader
-          title="Coordinators added this session"
-          description="The directory API is not exposed to the portal; newly-created coordinators appear here until you reload."
+          title="Team Members"
+          description="All coordinators and admins in your organization."
         />
-        {added.length === 0 ? (
+        {isLoading ? (
+          <div className="space-y-3 p-5">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        ) : !coordinators || coordinators.length === 0 ? (
           <EmptyState
             icon={Users}
             title="No coordinators added yet"
             description="Invite a coordinator to share the operational workload."
             action={
-              <Button
-                onClick={() => setOpen(true)}
-                disabled={!profile?.tenantSlug}
-              >
-                <UserPlus className="h-4 w-4" />
-                Add coordinator
-              </Button>
+              isAdmin ? (
+                <Button
+                  onClick={() => setOpen(true)}
+                  disabled={!profile?.tenantSlug}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Add coordinator
+                </Button>
+              ) : undefined
             }
           />
         ) : (
           <ul className="divide-y divide-border">
-            {added.map((u) => (
+            {coordinators.map((u) => (
               <li key={u.id} className="flex items-center gap-3 px-5 py-4">
                 <div
                   className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-semibold text-white"
@@ -127,10 +152,30 @@ export default function TeamPage() {
                     )}
                   </p>
                 </div>
-                <div className="text-right">
-                  <Badge tone="purple">Coordinator</Badge>
+                <div className="flex flex-col items-end gap-2 text-right">
+                  <div className="flex items-center gap-2">
+                    <Badge tone={u.user_type === "TENANT_ADMIN" ? "brand" : "purple"}>
+                      {u.user_type === "TENANT_ADMIN" ? "Admin" : "Coordinator"}
+                    </Badge>
+                    {isAdmin && profile?.id !== u.id && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setEditUser(u)}
+                          className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteUser(u)}
+                          className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {relativeTime(u.created_at)}
+                    Joined {relativeTime(u.created_at)}
                   </p>
                 </div>
               </li>
@@ -143,7 +188,46 @@ export default function TeamPage() {
         <AddCoordinatorModal
           tenantSlug={profile.tenantSlug}
           onClose={() => setOpen(false)}
-          onCreated={(u) => setAdded((prev) => [u, ...prev])}
+          onCreated={() => {}}
+        />
+      )}
+
+      {editUser && (
+        <EditCoordinatorModal
+          user={editUser}
+          onClose={() => setEditUser(null)}
+          updateMutation={updateMutation}
+        />
+      )}
+
+      {deleteUser && (
+        <Modal
+          open
+          onClose={() => setDeleteUser(null)}
+          title="Remove coordinator?"
+          description={`Are you sure you want to remove ${deleteUser.full_name}? They will no longer be able to access the console.`}
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setDeleteUser(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                loading={deleteMutation.isPending}
+                onClick={async () => {
+                  try {
+                    await deleteMutation.mutateAsync(deleteUser.id);
+                    toast.success("Coordinator removed", "They no longer have access.");
+                    setDeleteUser(null);
+                  } catch (err) {
+                    toast.error("Error", "Could not remove coordinator.");
+                  }
+                }}
+              >
+                Remove
+              </Button>
+            </>
+          }
         />
       )}
     </div>
@@ -246,6 +330,79 @@ function AddCoordinatorModal({
           Share this temporary password with the coordinator over a secure
           channel. They can change it after signing in.
         </div>
+      </div>
+    </Modal>
+  );
+}
+
+function EditCoordinatorModal({
+  user,
+  onClose,
+  updateMutation,
+}: {
+  user: UserRead;
+  onClose: () => void;
+  updateMutation: ReturnType<typeof useUpdateCoordinator>;
+}) {
+  const toast = useToast();
+  const [fullName, setFullName] = useState(user.full_name);
+  const [phone, setPhone] = useState(user.phone || "");
+
+  async function submit() {
+    try {
+      await updateMutation.mutateAsync({
+        userId: user.id,
+        full_name: fullName.trim(),
+        phone: phone.trim() || undefined,
+      });
+      toast.success("Coordinator updated", "Their profile has been saved.");
+      onClose();
+    } catch (err) {
+      toast.error(
+        "Could not update coordinator",
+        err instanceof ApiError ? err.detail : "Unexpected error",
+      );
+    }
+  }
+
+  const valid = fullName.trim().length > 0;
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title="Edit coordinator"
+      description={`Update profile details for ${user.email}`}
+      footer={
+        <>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            loading={updateMutation.isPending}
+            disabled={!valid}
+            onClick={submit}
+          >
+            Save changes
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <Field label="Full name" required>
+          <Input
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Coordinator name"
+          />
+        </Field>
+        <Field label="Phone">
+          <Input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Optional"
+          />
+        </Field>
       </div>
     </Modal>
   );

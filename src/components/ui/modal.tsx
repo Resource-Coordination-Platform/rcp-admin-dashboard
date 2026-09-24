@@ -18,7 +18,7 @@ export function Modal({
   onClose: () => void;
   title: string;
   description?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   footer?: React.ReactNode;
   size?: "sm" | "md" | "lg" | "xl";
 }) {
@@ -75,7 +75,7 @@ export function Modal({
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
+        {children && <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>}
         {footer && (
           <div className="flex items-center justify-end gap-3 border-t border-border px-6 py-4">
             {footer}

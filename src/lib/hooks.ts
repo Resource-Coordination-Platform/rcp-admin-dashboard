@@ -22,9 +22,11 @@ import type {
   UserRead,
   VolunteerDirectoryPage,
   VolunteerDirectoryQuery,
+  AuditLogRead,
 } from "./types";
 
 export const qk = {
+  auditLogs: ["audit-logs"] as const,
   alerts: ["alerts"] as const,
   categories: (includeInactive = false) =>
     ["categories", includeInactive ? "with-inactive" : "active"] as const,
@@ -131,6 +133,16 @@ export function useRequests(status?: RequestStatus) {
   return useQuery({
     queryKey: qk.requests(status),
     queryFn: () =>
+      api.get<HelpRequestRead[]>("/api/requests", {
+        query: status ? { status } : undefined,
+      }),
+  });
+}
+
+export function useGlobalRequests(status?: RequestStatus) {
+  return useQuery({
+    queryKey: ["global-requests", status],
+    queryFn: () =>
       api.get<HelpRequestRead[]>("/api/volunteer/requests", {
         query: status ? { status } : undefined,
       }),
@@ -143,10 +155,28 @@ export function useUpdateRequestStatus() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: RequestStatus }) =>
-      api.patch<HelpRequestRead>(`/api/volunteer/requests/${id}/status`, { status }),
+      api.patch<HelpRequestRead>(`/api/requests/${id}/status`, { status }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["requests"] });
       qc.invalidateQueries({ queryKey: ["reports"] });
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["audit-logs"] }), 1500);
+    },
+  });
+}
+
+export function useClaimRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      victim_request_id: string;
+      category_id: string;
+      quantity_needed?: number;
+      urgency?: string;
+    }) => api.post<HelpRequestRead>("/api/requests/claim", body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["requests"] });
+      qc.invalidateQueries({ queryKey: ["global-requests"] });
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["audit-logs"] }), 1500);
     },
   });
 }
@@ -155,7 +185,7 @@ export function useDeleteRequest() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      api.del(`/api/volunteer/requests/${id}`),
+      api.del(`/api/requests/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["requests"] });
       qc.invalidateQueries({ queryKey: ["reports"] });
@@ -164,6 +194,24 @@ export function useDeleteRequest() {
 }
 
 // ---- Dispatch ----
+export function useTasks() {
+  return useQuery({
+    queryKey: ["tasks"],
+    queryFn: () => api.get<any[]>("/api/volunteers/tasks"),
+  });
+}
+
+export function useUpdateTaskStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ taskId, status }: { taskId: string; status: string }) =>
+      api.patch(`/api/volunteers/tasks/${taskId}/status`, null, {
+        query: { new_status: status },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+  });
+}
+
 export function useDispatchTask() {
   return useMutation({
     mutationFn: (body: DispatchTaskCreate) =>
@@ -218,7 +266,7 @@ export function useRequestSummary() {
   return useQuery({
     queryKey: qk.requestSummary,
     queryFn: async () => {
-      const requests = await api.get<HelpRequestRead[]>("/api/volunteer/requests");
+      const requests = await api.get<HelpRequestRead[]>("/api/requests");
       const summary: RequestStatusSummary = {};
       for (const req of requests) {
         const status = (req.status || "pending").toLowerCase() as RequestStatus;
@@ -287,7 +335,15 @@ export function useCloseEvent() {
 }
 
 // ---- Team (register coordinator) ----
+export function useCoordinators() {
+  return useQuery({
+    queryKey: ["coordinators"],
+    queryFn: () => api.get<UserRead[]>("/api/auth/tenants/me/users"),
+  });
+}
+
 export function useRegisterCoordinator(tenantSlug: string) {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: {
       email: string;
@@ -300,6 +356,45 @@ export function useRegisterCoordinator(tenantSlug: string) {
         { ...body, user_type: "COORDINATOR" },
         { auth: false },
       ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["coordinators"] });
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["audit-logs"] }), 1500);
+    },
+  });
+}
+
+export function useUpdateCoordinator() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      userId,
+      full_name,
+      phone,
+    }: {
+      userId: string;
+      full_name?: string;
+      phone?: string;
+    }) =>
+      api.patch<UserRead>(`/api/auth/tenants/me/users/${userId}`, {
+        full_name,
+        phone,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["coordinators"] });
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["audit-logs"] }), 1500);
+    },
+  });
+}
+
+export function useDeleteCoordinator() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      api.del(`/api/auth/tenants/me/users/${userId}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["coordinators"] });
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["audit-logs"] }), 1500);
+    },
   });
 }
 
@@ -317,5 +412,13 @@ export function useBroadcastAlert() {
     mutationFn: (body: DisasterAlertCreate) =>
       api.post<DisasterAlertRead>("/api/alerts", body),
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.alerts }),
+  });
+}
+
+// ---- Audit Logs ----
+export function useAuditLogs() {
+  return useQuery({
+    queryKey: qk.auditLogs,
+    queryFn: () => api.get<AuditLogRead[]>("/api/audit-logs"),
   });
 }
