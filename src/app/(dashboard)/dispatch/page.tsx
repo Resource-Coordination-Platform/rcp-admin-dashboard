@@ -39,10 +39,10 @@ export default function DispatchPage() {
       case "in_progress":
         return <Badge tone="brand">{status}</Badge>;
       case "completed":
-        return <Badge tone="emerald">{status}</Badge>;
+        return <Badge tone="success">{status}</Badge>;
       case "declined":
       case "cancelled":
-        return <Badge tone="critical">{status}</Badge>;
+        return <Badge tone="danger">{status}</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
