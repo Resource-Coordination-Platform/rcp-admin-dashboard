@@ -41,6 +41,7 @@ export default function TeamPage() {
   const [editUser, setEditUser] = useState<UserRead | null>(null);
   const [deleteUser, setDeleteUser] = useState<UserRead | null>(null);
   const { data: coordinators, isLoading } = useCoordinators();
+  const isAdmin = profile?.user_type === "TENANT_ADMIN";
   
   const updateMutation = useUpdateCoordinator();
   const deleteMutation = useDeleteCoordinator();
@@ -52,10 +53,12 @@ export default function TeamPage() {
         title="Team"
         description="Provision coordinators who help triage requests, manage inventory and dispatch volunteers."
         actions={
-          <Button onClick={() => setOpen(true)} disabled={!profile?.tenantSlug}>
-            <UserPlus className="h-4 w-4" />
-            Add coordinator
-          </Button>
+          isAdmin ? (
+            <Button onClick={() => setOpen(true)} disabled={!profile?.tenantSlug}>
+              <UserPlus className="h-4 w-4" />
+              Add coordinator
+            </Button>
+          ) : undefined
         }
       />
 
@@ -110,13 +113,15 @@ export default function TeamPage() {
             title="No coordinators added yet"
             description="Invite a coordinator to share the operational workload."
             action={
-              <Button
-                onClick={() => setOpen(true)}
-                disabled={!profile?.tenantSlug}
-              >
-                <UserPlus className="h-4 w-4" />
-                Add coordinator
-              </Button>
+              isAdmin ? (
+                <Button
+                  onClick={() => setOpen(true)}
+                  disabled={!profile?.tenantSlug}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Add coordinator
+                </Button>
+              ) : undefined
             }
           />
         ) : (
@@ -152,7 +157,7 @@ export default function TeamPage() {
                     <Badge tone={u.user_type === "TENANT_ADMIN" ? "brand" : "purple"}>
                       {u.user_type === "TENANT_ADMIN" ? "Admin" : "Coordinator"}
                     </Badge>
-                    {profile?.id !== u.id && (
+                    {isAdmin && profile?.id !== u.id && (
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => setEditUser(u)}
