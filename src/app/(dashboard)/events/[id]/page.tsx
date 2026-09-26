@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -10,8 +11,10 @@ import {
   RefreshCw,
   Users,
   XCircle,
+  Pencil,
+  Plus,
 } from "lucide-react";
-import { useCloseEvent, useEvent, useRebroadcastEvent } from "@/lib/hooks";
+import { useCloseEvent, useEvent, useRebroadcastEvent, useUpdateEvent } from "@/lib/hooks";
 import { BROADCAST_META } from "@/lib/constants";
 import { ApiError } from "@/lib/api";
 import { formatDateTime, humanizeSkill, pct } from "@/lib/format";
@@ -22,26 +25,28 @@ import {
   CardHeader,
   Progress,
   Skeleton,
+  Field,
+  Input,
+  Textarea,
 } from "@/components/ui/primitives";
 import { BroadcastBadge, EventStatusBadge } from "@/components/ui/badges";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 
-export default function EventDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const { id } = params;
+export default function EventDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
   const toast = useToast();
   const { data: event, isLoading } = useEvent(id);
   const rebroadcast = useRebroadcastEvent();
   const closeEvent = useCloseEvent();
   const [confirmClose, setConfirmClose] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const canRebroadcast =
     event?.status === "DECLARED" || event?.status === "BROADCASTING";
   const canClose = event?.status !== "CLOSED";
+  const canEdit = event?.status !== "CLOSED";
 
   async function onRebroadcast() {
     try {
@@ -153,6 +158,14 @@ export default function EventDetailPage({
           </div>
 
           <div className="flex shrink-0 gap-2">
+            <Button
+              variant="outline"
+              disabled={!canEdit}
+              onClick={() => setIsEditing(true)}
+            >
+              <Pencil className="h-4 w-4" />
+              Edit
+            </Button>
             <Button
               variant="outline"
               disabled={!canRebroadcast}
@@ -268,6 +281,152 @@ export default function EventDetailPage({
           be marked as closed. Volunteers already assigned keep their tasks.
         </p>
       </Modal>
+
+      {isEditing && event && (
+        <EditEventModal event={event} onClose={() => setIsEditing(false)} />
+      )}
     </div>
+  );
+}
+
+function EditEventModal({ event, onClose }: { event: any; onClose: () => void }) {
+  const toast = useToast();
+  const updateEvent = useUpdateEvent();
+
+  const [title, setTitle] = useState(event.title);
+  const [description, setDescription] = useState(event.description || "");
+  const [requirements, setRequirements] = useState<
+    Array<{ skill: string; required_count: number; filled_count: number; isExisting: boolean }>
+  >(
+    event.requirements.map((r: any) => ({
+      skill: r.skill,
+      required_count: r.required_count,
+      filled_count: r.filled_count,
+      isExisting: true,
+    }))
+  );
+
+  function updateReq(i: number, patch: Partial<typeof requirements[0]>) {
+    setRequirements((r) => r.map((req, idx) => (idx === i ? { ...req, ...patch } : req)));
+  }
+
+  function removeReq(i: number) {
+    const req = requirements[i];
+    if (req.isExisting && req.filled_count > 0) {
+      toast.error("Cannot remove", "This skill already has volunteers assigned.");
+      return;
+    }
+    setRequirements((rs) => rs.filter((_, idx) => idx !== i));
+  }
+
+  async function submit() {
+    const cleanedReqs = requirements
+      .filter((r) => r.skill.trim())
+      .map((r) => ({
+        skill: r.skill.trim().toLowerCase().replace(/\s+/g, "_"),
+        required_count: Math.max(1, Number(r.required_count) || 1),
+      }));
+
+    if (cleanedReqs.length === 0) {
+      toast.error("Requirements needed", "Event must have at least one skill requirement.");
+      return;
+    }
+
+    try {
+      await updateEvent.mutateAsync({
+        id: event.id,
+        title: title.trim(),
+        description: description.trim() || null,
+        requirements: cleanedReqs,
+      });
+      toast.success("Event updated", "Changes have been saved successfully.");
+      onClose();
+    } catch (err: any) {
+      toast.error("Could not update event", err.detail || "Unexpected error");
+    }
+  }
+
+  const valid = title.trim().length >= 3 && requirements.some((r) => r.skill.trim());
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      size="lg"
+      title="Edit event"
+      description="Update event details and requirements."
+      footer={
+        <>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button loading={updateEvent.isPending} disabled={!valid} onClick={submit}>
+            Save changes
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <Field label="Event title" required hint="At least 3 characters">
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        </Field>
+        <Field label="Description">
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+          />
+        </Field>
+
+        <div className="rounded-xl border border-border bg-slate-50/60 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Volunteer requirements</p>
+            </div>
+            <Button
+              size="sm"
+              variant="subtle"
+              onClick={() =>
+                setRequirements((r) => [
+                  ...r,
+                  { skill: "", required_count: 1, filled_count: 0, isExisting: false },
+                ])
+              }
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add skill
+            </Button>
+          </div>
+
+          <div className="mt-3 space-y-2">
+            {requirements.map((r, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Input
+                  value={r.skill}
+                  onChange={(e) => updateReq(i, { skill: e.target.value })}
+                  placeholder="Skill (e.g. first_aid)"
+                  className="h-9 flex-1"
+                  disabled={r.isExisting}
+                />
+                <Input
+                  type="number"
+                  min={Math.max(1, r.filled_count)}
+                  value={r.required_count}
+                  onChange={(e) => updateReq(i, { required_count: Number(e.target.value) })}
+                  className="h-9 w-24"
+                />
+                <button
+                  onClick={() => removeReq(i)}
+                  disabled={r.isExisting && r.filled_count > 0}
+                  className="rounded-md px-2 py-1 text-xs text-slate-400 hover:text-red-600 disabled:opacity-50"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Modal>
   );
 }

@@ -293,6 +293,22 @@ export function useEvent(id: string) {
   });
 }
 
+export function useUpdateEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      id: string;
+      title: string;
+      description: string | null;
+      requirements: Array<{ skill: string; required_count: number }>;
+    }) => api.patch<DisasterEventRead>(`/api/volunteer/events/${data.id}`, data),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(qk.event(updated.id), updated);
+      queryClient.invalidateQueries({ queryKey: qk.events });
+    },
+  });
+}
+
 export function useDistricts() {
   return useQuery({
     queryKey: qk.districts,
