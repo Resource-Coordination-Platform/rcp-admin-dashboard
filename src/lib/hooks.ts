@@ -42,7 +42,7 @@ export const qk = {
   volunteerSkills: ["volunteers", "skills"] as const,
 };
 
-// ---- All Categories ----
+// ---- All the Categories ----
 export function useCategories(includeInactive = false) {
   return useQuery({
     queryKey: qk.categories(includeInactive),
