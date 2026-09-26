@@ -13,7 +13,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
+} from "recharts"; 
 import {
   ArrowRight,
   Boxes,
