@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     "Tenant admin dashboard for coordinating relief: requests, inventory, volunteers and disaster response.",
 };
-
+//commit
 export default function RootLayout({
   children,
 }: {
