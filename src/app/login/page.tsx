@@ -96,26 +96,26 @@ export default function LoginPage() {
           className="pointer-events-none absolute inset-0 opacity-40"
           style={{
             backgroundImage:
-              "radial-gradient(60rem 60rem at 20% -10%, rgba(53,99,255,0.35), transparent), radial-gradient(50rem 50rem at 90% 110%, rgba(53,99,255,0.25), transparent)",
+              "radial-gradient(60rem 60rem at 20% -10%, rgba(11,114,97,0.40), transparent), radial-gradient(50rem 50rem at 90% 110%, rgba(11,114,97,0.25), transparent)",
           }}
         />
         <div className="relative flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 shadow-lg shadow-brand-600/40">
-            <ShieldCheck className="h-6 w-6" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 p-1.5 backdrop-blur shadow-lg shadow-brand-600/40">
+            <img src="/logo.png" alt="RCP Logo" className="h-full w-full object-contain rounded-lg" />
           </div>
           <div>
-            <p className="font-semibold">
+            <p className="font-bold text-base text-white">
               Sahasra Resource Coordination Platform
             </p>
-            <p className="text-sm text-sidebar-muted">Tenant Admin Console</p>
+            <p className="text-xs text-sidebar-muted">Tenant Admin Console</p>
           </div>
         </div>
 
         <div className="relative max-w-md">
-          <h1 className="text-3xl font-semibold leading-tight">
+          <h1 className="text-3xl font-bold leading-tight tracking-tight">
             Coordinate relief when every minute counts.
           </h1>
-          <p className="mt-4 text-slate-300">
+          <p className="mt-4 text-slate-300 text-sm leading-relaxed">
             Triage requests, track inventory, dispatch volunteers and broadcast
             disaster events all from one command center.
           </p>
@@ -144,16 +144,18 @@ export default function LoginPage() {
       {/* Right: form */}
       <div className="flex w-full items-center justify-center bg-background px-6 py-12 lg:w-1/2">
         <div className="w-full max-w-sm">
-          <div className="mb-8 lg:hidden">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600">
-                <ShieldCheck className="h-5 w-5 text-white" />
-              </div>
-              <p className="font-semibold text-slate-900">RCP Admin</p>
+          {/* Brand header */}
+          <div className="mb-6 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 p-1.5 ring-1 ring-brand-200 shadow-sm">
+              <img src="/logo.png" alt="RCP Logo" className="h-full w-full object-contain rounded-lg" />
+            </div>
+            <div>
+              <p className="font-bold text-slate-900 text-lg leading-tight">RCP Admin</p>
+              <p className="text-xs text-muted-foreground">Resource Coordination Platform</p>
             </div>
           </div>
 
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
             Welcome back
           </h2>
           <p className="mt-1.5 text-sm text-muted-foreground">
@@ -178,11 +180,10 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
-            <Field label="Organization slug" required hint="e.g. kolonnawa">
+            <Field label="Organization slug" required >
               <Input
                 value={tenantSlug}
                 onChange={(e) => setTenantSlug(e.target.value)}
-                placeholder="relief-org-lk"
                 autoComplete="organization"
                 required
               />
@@ -192,7 +193,6 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@relief-org.lk"
                 autoComplete="email"
                 required
               />
@@ -249,10 +249,7 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            Portal access is provisioned by your platform operator during tenant
-            onboarding.
-          </p>
+         
         </div>
       </div>
     </div>

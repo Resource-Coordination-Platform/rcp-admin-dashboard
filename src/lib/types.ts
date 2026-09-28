@@ -71,6 +71,8 @@ export type RequestStatus =
 export type UrgencyLevel = "low" | "medium" | "high" | "critical";
 
 export interface HelpRequestRead {
+  requested_items?: { code: string; label: string; quantity: number | null; unit: string; category_id?: string | null }[];
+  delivery_status?: string | null;
   id: string;
   victim_id?: string;
   tenant_id?: string;
@@ -328,8 +330,39 @@ export interface DisasterEventCreate {
   requirements: RequirementCreate[];
 }
 
+export type AssignmentStatus = "NOTIFIED" | "ACCEPTED" | "EN_ROUTE" | "COMPLETED" | "DECLINED" | "REJECTED_FULL";
+
+export interface EventAssignmentRead {
+  id: string;
+  status: AssignmentStatus;
+  created_at: string;
+  responded_at: string | null;
+  updated_at: string;
+  requirement: RequirementRead;
+  volunteer: { full_name: string; phone: string | null; base_district: string | null };
+}
+
 export interface DistrictMap {
   [key: string]: string[];
+}
+
+// ---- Volunteer field reports (schema_volunteer.volunteer_reports) ----
+export type VolunteerReportStatus = "PENDING" | "VERIFIED" | "REJECTED";
+
+export interface VolunteerReportRead {
+  id: string;
+  volunteer_id: string;
+  category: string;
+  severity: string;
+  latitude: number;
+  longitude: number;
+  assigned_tenant_id: string | null;
+  description: string | null;
+  image_url: string | null;
+  status: VolunteerReportStatus;
+  created_at: string;
+  volunteer_name: string | null;
+  volunteer_phone: string | null;
 }
 
 // ---- Emergency Disaster Alerts (SRS 3.1.5.2 & 3.1.5.3) ----

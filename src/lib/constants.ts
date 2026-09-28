@@ -96,7 +96,7 @@ export const INVENTORY_STATUS_META: Record<
   available: { label: "Available", tone: "success" },
   reserved: { label: "Reserved", tone: "warning" },
   depleted: { label: "Depleted", tone: "danger" },
-  expired: { label: "Expired", tone: "neutral" },
+  expired: { label: "Expired", tone: "danger" },
 };
 
 export const TASK_STATUS_META: Record<

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -14,8 +15,8 @@ import {
   Pencil,
   Plus,
 } from "lucide-react";
-import { useCloseEvent, useEvent, useRebroadcastEvent, useUpdateEvent } from "@/lib/hooks";
-import { BROADCAST_META } from "@/lib/constants";
+import { useCloseEvent, useEvent, useEventAssignments, useRebroadcastEvent } from "@/lib/hooks";
+import type { AssignmentStatus } from "@/lib/types";
 import { ApiError } from "@/lib/api";
 import { formatDateTime, humanizeSkill, pct } from "@/lib/format";
 import {
@@ -33,11 +34,16 @@ import { BroadcastBadge, EventStatusBadge } from "@/components/ui/badges";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 
+const statusLabels: Record<AssignmentStatus, string> = {
+  NOTIFIED: "Awaiting response", ACCEPTED: "Accepted", EN_ROUTE: "En route",
+  COMPLETED: "Completed", DECLINED: "Declined", REJECTED_FULL: "Quota full",
+};
+
 export default function EventDetailPage() {
-  const params = useParams();
-  const id = params.id as string;
+  const { id } = useParams<{ id: string }>();
   const toast = useToast();
-  const { data: event, isLoading } = useEvent(id);
+  const { data: event, isLoading, error, refetch } = useEvent(id);
+  const roster = useEventAssignments(id);
   const rebroadcast = useRebroadcastEvent();
   const closeEvent = useCloseEvent();
   const [confirmClose, setConfirmClose] = useState(false);
@@ -86,7 +92,12 @@ export default function EventDetailPage() {
   if (!event) {
     return (
       <Card className="p-10 text-center">
-        <p className="text-sm text-muted-foreground">Event not found.</p>
+        <p className="text-sm text-muted-foreground">
+          {error instanceof ApiError && error.status === 404
+            ? "Event not found."
+            : "Unable to load this event. Please try again."}
+        </p>
+        <Button variant="outline" className="mt-3" onClick={() => void refetch()}>Retry</Button>
         <Link
           href="/events"
           className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-brand-600"
@@ -100,6 +111,11 @@ export default function EventDetailPage() {
   const filled = event.requirements.reduce((a, r) => a + r.filled_count, 0);
   const needed = event.requirements.reduce((a, r) => a + r.required_count, 0);
   const progress = pct(filled, needed);
+  const assignments = roster.data ?? [];
+  const accepted = assignments.filter(a => a.status === "ACCEPTED").length;
+  const enRoute = assignments.filter(a => a.status === "EN_ROUTE").length;
+  const completed = assignments.filter(a => a.status === "COMPLETED").length;
+  const joined = accepted + enRoute + completed;
 
   return (
     <div>
@@ -112,6 +128,7 @@ export default function EventDetailPage() {
 
       {/* Header card */}
       <Card className="p-6">
+        {error && <p role="alert" className="mb-3 text-sm text-amber-700">Event refresh failed. Showing the last loaded data.</p>}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -126,7 +143,7 @@ export default function EventDetailPage() {
                 <MapPin className="h-4 w-4" />
                 {event.source_district}
               </span>
-              {event.latitude !== null && event.longitude !== null && (
+              {event.latitude != null && event.longitude != null && (
                 <a
                   href={`https://www.google.com/maps?q=${event.latitude},${event.longitude}`}
                   target="_blank"
@@ -253,6 +270,55 @@ export default function EventDetailPage() {
             );
           })}
         </div>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader title="Volunteer task progress" description="Current volunteer-reported status. Updates every 5 seconds while this page is visible." />
+        {roster.error && (
+          <div role="alert" className="px-5 pb-4 text-sm text-amber-700">
+            Could not refresh volunteer progress. {roster.data ? "Showing the last loaded statuses." : "Try again to load the team."}
+            <Button variant="outline" className="ml-3" onClick={() => void roster.refetch()}>Retry</Button>
+          </div>
+        )}
+        {roster.isLoading ? <Skeleton className="m-5 h-32" /> : roster.data && (
+          <>
+            <div className="grid grid-cols-1 gap-3 px-5 sm:grid-cols-3">
+              {[["Accepted", accepted], ["En route", enRoute], ["Completed", completed]].map(([label, count]) => (
+                <div key={label} className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-sm text-muted-foreground">{label}</p>
+                  <p className="mt-1 text-2xl font-semibold">{count}</p>
+                </div>
+              ))}
+            </div>
+            <div className="p-5">
+              <p className="mb-2 text-sm font-medium">Task completion: {completed} / {joined} joined volunteers ({pct(completed, joined)}%)</p>
+              <Progress value={pct(completed, joined)} tone="success" />
+              <p className="mt-2 text-xs text-muted-foreground">Team fill counts accepted places. Task completion counts volunteers who finished their assignment.</p>
+            </div>
+            {assignments.length === 0 ? <p className="px-5 pb-5 text-sm text-muted-foreground">No volunteers have been notified for this event yet.</p> : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="border-y bg-slate-50 text-muted-foreground"><tr>
+                    {["Volunteer", "Assigned skill", "Status", "Last update"].map(label => <th key={label} className="px-5 py-3 font-medium">{label}</th>)}
+                  </tr></thead>
+                  <tbody className="divide-y">
+                    {assignments.map(assignment => (
+                      <tr key={assignment.id}>
+                        <td className="px-5 py-4"><p className="font-semibold">{assignment.volunteer.full_name}</p>
+                          <p className="text-xs text-muted-foreground">{assignment.volunteer.base_district || "District not set"}</p>
+                          {assignment.volunteer.phone && <a className="text-brand-600" href={`tel:${assignment.volunteer.phone}`}>{assignment.volunteer.phone}</a>}
+                        </td>
+                        <td className="px-5 py-4">{humanizeSkill(assignment.requirement.skill)}</td>
+                        <td className="px-5 py-4"><Badge tone={assignment.status === "COMPLETED" ? "success" : assignment.status === "EN_ROUTE" ? "purple" : "warning"}>{statusLabels[assignment.status]}</Badge></td>
+                        <td className="px-5 py-4 text-muted-foreground">{formatDateTime(assignment.updated_at)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
       </Card>
 
       <Modal

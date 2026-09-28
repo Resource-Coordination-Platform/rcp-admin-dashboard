@@ -20,24 +20,38 @@ const config: Config = {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
         },
+        // Brand palette derived from logo's signature emerald/teal green (#0B7261)
         brand: {
-          50: "#eef4ff",
-          100: "#d9e6ff",
-          200: "#bcd3ff",
-          300: "#8eb6ff",
-          400: "#598cff",
-          500: "#3563ff",
-          600: "#1f43f5",
-          700: "#1732e1",
-          800: "#192bb6",
-          900: "#1a2b8f",
-          950: "#141a57",
+          50: "#f0fdf9",
+          100: "#ccfbf1",
+          200: "#99f6e4",
+          300: "#5eead4",
+          400: "#2dd4bf",
+          500: "#14b8a6",
+          600: "#0b7261", // Primary Logo Green
+          700: "#095c4e",
+          800: "#08483e",
+          900: "#083730", // Deep logo dark outline
+          950: "#04201c",
+        },
+        // Soft, eye-friendly warm apricot/coral orange palette
+        coral: {
+          50: "#fff9f5",
+          100: "#ffede0",
+          200: "#fed8c1",
+          300: "#fcbea0",
+          400: "#f79b72",
+          500: "#e97d4d",
+          600: "#d26635",
+          700: "#b04e22",
+          800: "#8f3d18",
+          900: "#743215",
         },
         sidebar: {
-          DEFAULT: "#0f172a",
-          hover: "#1e293b",
-          active: "#1d4ed8",
-          muted: "#94a3b8",
+          DEFAULT: "#0b1f1c", // Deep dark pine tone
+          hover: "#122e2a",
+          active: "#0b7261", // Active menu item matching logo green
+          muted: "#8fa8a4",
         },
       },
       borderRadius: {
@@ -46,12 +60,12 @@ const config: Config = {
         "2xl": "1.25rem",
       },
       boxShadow: {
-        card: "0 1px 2px 0 rgba(15,23,42,0.04), 0 1px 3px 0 rgba(15,23,42,0.06)",
+        card: "0 1px 2px 0 rgba(11,114,97,0.04), 0 1px 3px 0 rgba(11,114,97,0.06)",
         elevated:
-          "0 10px 30px -12px rgba(15,23,42,0.18), 0 4px 8px -4px rgba(15,23,42,0.08)",
+          "0 10px 30px -12px rgba(11,114,97,0.18), 0 4px 8px -4px rgba(11,114,97,0.08)",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        sans: ["var(--font-inter)", "var(--font-sans)", "'Inter'", "system-ui", "-apple-system", "sans-serif"],
       },
       keyframes: {
         "fade-in": {

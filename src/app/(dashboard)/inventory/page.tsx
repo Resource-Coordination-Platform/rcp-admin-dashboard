@@ -10,7 +10,6 @@ import {
   Package,
   Plus,
   Search,
-  User,
 } from "lucide-react";
 import {
   useAddInventoryItem,
@@ -19,8 +18,14 @@ import {
   useReserveStock,
 } from "@/lib/hooks";
 import type { InventoryItemRead } from "@/lib/types";
+import {
+  availableStock,
+  inventoryToday,
+  isExpiredStock,
+  isLowStock,
+} from "@/lib/inventory";
 import { ApiError } from "@/lib/api";
-import { formatDate, pct } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import {
@@ -30,7 +35,6 @@ import {
   EmptyState,
   Field,
   Input,
-  Progress,
   Select,
   Skeleton,
 } from "@/components/ui/primitives";
@@ -40,8 +44,10 @@ import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 
 export default function InventoryPage() {
-  const { data, isLoading } = useInventory();
-  const categories = useCategories();
+  const { data, isLoading, isError, refetch } = useInventory();
+  const categories = useCategories(true);
+  const today = inventoryToday();
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
   const [locationFilter, setLocationFilter] = useState("all");
   const [search, setSearch] = useState("");
@@ -76,26 +82,57 @@ export default function InventoryPage() {
         (item.storage_location &&
           item.storage_location.toLowerCase().includes(q)) ||
         categoryName(item.category_id).toLowerCase().includes(q);
-      return matchLoc && matchSearch;
+      return (
+        matchLoc &&
+        matchSearch &&
+        (categoryFilter === "all" || item.category_id === categoryFilter)
+      );
     });
-  }, [items, locationFilter, search, categoryName]);
+  }, [items, locationFilter, search, categoryName, categoryFilter]);
 
-  const totalAvailable = items.reduce((a, i) => a + i.quantity_available, 0);
-  const totalReserved = items.reduce((a, i) => a + i.quantity_reserved, 0);
-  const lowOrExpired = items.filter(
-    (i) =>
-      i.status === "depleted" ||
-      i.status === "expired" ||
-      i.quantity_available <= 10,
-  ).length;
-
-  const noCategories = (categories.data ?? []).length === 0;
+  const groups = useMemo(() => {
+    const grouped = new Map<string, InventoryItemRead[]>();
+    for (const item of filteredItems) {
+      const members = grouped.get(item.category_id) ?? [];
+      members.push(item);
+      grouped.set(item.category_id, members);
+    }
+    return [...grouped]
+      .map(([id, members]) => ({
+        id,
+        name: categoryName(id),
+        unit:
+          categories.data?.find((category) => category.id === id)?.unit ?? "",
+        items: [...members].sort(
+          (a, b) =>
+            a.name.localeCompare(b.name) ||
+            (a.storage_location ?? "").localeCompare(
+              b.storage_location ?? "",
+            ) ||
+            a.id.localeCompare(b.id),
+        ),
+        available: members.reduce(
+          (sum, item) => sum + availableStock(item, today),
+          0,
+        ),
+        reserved: members.reduce(
+          (sum, item) => sum + item.quantity_reserved,
+          0,
+        ),
+        attention: members.filter((item) => isLowStock(item, today)).length,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
+  }, [filteredItems, categories.data, categoryName, today]);
+  const activeCategories = (categories.data ?? []).filter(
+    (category) => category.is_active,
+  );
+  const noCategories = activeCategories.length === 0;
 
   return (
     <div>
       <PageHeader
-        title="Inventory Tracking & Stock Management"
-        description="Warehouse level location tagging, low-stock threshold monitoring, and inbound donor supply intake."
+        title="Inventory"
+        description="Browse stock by category, with availability and reservations for every item."
         actions={
           <Button onClick={() => setAddOpen(true)} disabled={noCategories}>
             <Plus className="h-4 w-4" />
@@ -103,37 +140,6 @@ export default function InventoryPage() {
           </Button>
         }
       />
-
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard
-          label="Items tracked"
-          value={items.length}
-          icon={Boxes}
-          accent="brand"
-          loading={isLoading}
-        />
-        <StatCard
-          label="Available"
-          value={totalAvailable}
-          icon={CircleCheck}
-          accent="emerald"
-          loading={isLoading}
-        />
-        <StatCard
-          label="Reserved"
-          value={totalReserved}
-          icon={Lock}
-          accent="amber"
-          loading={isLoading}
-        />
-        <StatCard
-          label="Low stock / expired"
-          value={lowOrExpired}
-          icon={AlertTriangle}
-          accent="red"
-          loading={isLoading}
-        />
-      </div>
 
       {noCategories && !categories.isLoading && (
         <div className="mb-6 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -147,9 +153,25 @@ export default function InventoryPage() {
 
       <Card>
         {/* Toolbar with Location Tagging Filter */}
-        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-3 border-b border-border p-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
             <Select
+              aria-label="Category"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-48 text-xs"
+            >
+              <option value="all">All categories</option>
+              {[...(categories.data ?? [])]
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+            </Select>
+            <Select
+              aria-label="Warehouse / location"
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
               className="w-48 text-xs"
@@ -166,6 +188,7 @@ export default function InventoryPage() {
           <div className="relative w-full sm:w-64">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
+              aria-label="Search inventory"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search inventory items…"
@@ -174,12 +197,28 @@ export default function InventoryPage() {
           </div>
         </div>
 
-        {isLoading ? (
+        {isLoading || categories.isLoading ? (
           <div className="space-y-3 p-5">
             {[...Array(6)].map((_, i) => (
               <Skeleton key={i} className="h-14 w-full" />
             ))}
           </div>
+        ) : isError || categories.isError ? (
+          <EmptyState
+            icon={AlertTriangle}
+            title="Could not load inventory"
+            description="Please try again."
+            action={
+              <Button
+                onClick={() => {
+                  void refetch();
+                  void categories.refetch();
+                }}
+              >
+                Retry
+              </Button>
+            }
+          />
         ) : filteredItems.length === 0 ? (
           <EmptyState
             icon={Package}
@@ -195,89 +234,162 @@ export default function InventoryPage() {
             }
           />
         ) : (
-          <Table>
-            <THead>
-              <TH>Item & Warehouse Location</TH>
-              <TH>Category</TH>
-              <TH className="w-56">Stock & Thresholds</TH>
-              <TH>Status</TH>
-              <TH>Expiry</TH>
-              <TH className="text-right">Actions</TH>
-            </THead>
-            <TBody>
-              {filteredItems.map((item) => {
-                const isLowStock =
-                  item.quantity_available <= 10 && item.quantity_available > 0;
-                return (
-                  <TR key={item.id}>
-                    <TD>
-                      <p className="font-semibold text-slate-900">
-                        {item.name}
-                      </p>
-                      <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                        <MapPin className="h-3 w-3 text-brand-600" />
-                        {item.storage_location ?? "Central Warehouse"}
-                      </p>
-                    </TD>
-                    <TD className="text-slate-600">
-                      {categoryName(item.category_id)}
-                    </TD>
-                    <TD>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-bold text-slate-900">
-                          {item.quantity_available} avail.
-                        </span>
-                        <span className="text-muted-foreground">
-                          {item.quantity_reserved}/{item.quantity_total}{" "}
-                          reserved
-                        </span>
-                      </div>
-                      <Progress
-                        className="mt-1.5"
-                        value={pct(item.quantity_reserved, item.quantity_total)}
-                        tone={
-                          item.quantity_available === 0
-                            ? "danger"
-                            : isLowStock
-                              ? "warning"
-                              : "brand"
-                        }
-                      />
-                      {isLowStock && (
-                        <div className="mt-1">
-                          <Badge tone="warning" className="text-[10px]">
-                            ⚠️ Low Stock (≤10)
-                          </Badge>
-                        </div>
-                      )}
-                    </TD>
-                    <TD>
-                      <InventoryStatusBadge status={item.status} />
-                    </TD>
-                    <TD className="text-slate-600">
-                      {formatDate(item.expiry_date)}
-                    </TD>
-                    <TD className="text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={item.quantity_available === 0}
-                        onClick={() => setReserveItem(item)}
-                      >
-                        Reserve
-                      </Button>
-                    </TD>
-                  </TR>
-                );
-              })}
-            </TBody>
-          </Table>
+          <div className="space-y-6 bg-slate-50/50 p-4">
+            <p className="text-xs text-muted-foreground">
+              Showing {filteredItems.length} stock records in {groups.length}{" "}
+              categories. Summaries follow your filters. Low stock: 1 to 10 available units per record. Expired stock is excluded.
+            </p>
+            {groups.map((group) => (
+              <section
+                key={group.id}
+                aria-labelledby={`inventory-${group.id}`}
+                className="overflow-hidden rounded-xl border border-coral-200/80 bg-white shadow-sm"
+              >
+                <div className="border-b border-coral-200/70 bg-gradient-to-r from-coral-50/90 to-coral-50/40 p-4">
+                  <h2
+                    id={`inventory-${group.id}`}
+                    className="text-lg font-semibold text-slate-900"
+                  >
+                    {group.name}
+                  </h2>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {group.unit
+                      ? `Stock measured in ${group.unit}`
+                      : "Unit not specified"}
+                  </p>
+                  <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
+                    <StatCard
+                      label="Items tracked"
+                      value={group.items.length}
+                      hint="Stock records"
+                      icon={Boxes}
+                      accent="brand"
+                    />
+                    <StatCard
+                      label="Available"
+                      value={group.available.toLocaleString()}
+                      hint={group.unit}
+                      icon={CircleCheck}
+                      accent="emerald"
+                    />
+                    <StatCard
+                      label="Reserved"
+                      value={group.reserved.toLocaleString()}
+                      hint={group.unit}
+                      icon={Lock}
+                      accent="amber"
+                    />
+                    <StatCard
+                      label="Low stock items"
+                      value={group.attention}
+                      hint="Stock records"
+                      icon={AlertTriangle}
+                      accent="red"
+                    />
+                  </div>
+                </div>
+                <Table>
+                  <THead>
+                    <TH>Item & Warehouse Location</TH>
+                    <TH className="text-right">Available</TH>
+                    <TH className="text-right">Reserved</TH>
+                    <TH className="text-right">Total</TH>
+                    <TH>Status / alerts</TH>
+                    <TH>Expiry</TH>
+                    <TH className="text-right">Actions</TH>
+                  </THead>
+                  <TBody>
+                    {group.items.map((item) => {
+                      const expired = isExpiredStock(item, today);
+                      const lowStock = isLowStock(item, today);
+                      return (
+                        <TR
+                          key={item.id}
+                          className={
+                            expired
+                              ? "bg-red-50 border-l-4 border-l-red-500"
+                              : undefined
+                          }
+                        >
+                          <TD>
+                            <p className="font-semibold text-slate-900">
+                              {item.name}
+                            </p>
+                            <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                              <MapPin className="h-3 w-3 text-brand-600" />
+                              {item.storage_location ?? "Central Warehouse"}
+                            </p>
+                          </TD>
+                          <TD className="text-right">
+                            <span className="font-semibold tabular-nums text-emerald-700">
+                              {availableStock(item, today).toLocaleString()}
+                            </span>
+                            <span className="ml-1 text-xs text-muted-foreground">
+                              {group.unit}
+                            </span>
+                          </TD>
+                          <TD className="text-right">
+                            <span className="font-semibold tabular-nums text-amber-700">
+                              {item.quantity_reserved.toLocaleString()}
+                            </span>
+                            <span className="ml-1 text-xs text-muted-foreground">
+                              {group.unit}
+                            </span>
+                          </TD>
+                          <TD className="text-right">
+                            <span className="tabular-nums">
+                              {item.quantity_total.toLocaleString()}
+                            </span>
+                            <span className="ml-1 text-xs text-muted-foreground">
+                              {group.unit}
+                            </span>
+                          </TD>
+                          <TD>
+                            <div className="flex flex-wrap gap-1.5">
+                              <InventoryStatusBadge
+                                status={expired ? "expired" : item.status}
+                              />
+                              {lowStock && (
+                                <Badge tone="warning">Low stock</Badge>
+                              )}
+                              {item.quantity_available <= 0 &&
+                                item.status !== "depleted" &&
+                                !expired && (
+                                  <Badge tone="warning">Out of stock</Badge>
+                                )}
+                            </div>
+                          </TD>
+                          <TD className="text-slate-600">
+                            {formatDate(item.expiry_date)}
+                          </TD>
+                          <TD className="text-right">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={
+                                item.quantity_available <= 0 ||
+                                expired ||
+                                item.status === "depleted"
+                              }
+                              onClick={() => setReserveItem(item)}
+                            >
+                              Reserve
+                            </Button>
+                          </TD>
+                        </TR>
+                      );
+                    })}
+                  </TBody>
+                </Table>
+              </section>
+            ))}
+          </div>
         )}
       </Card>
 
       {addOpen && (
         <AddItemModal
-          categories={categories.data ?? []}
+          categories={activeCategories}
           onClose={() => setAddOpen(false)}
         />
       )}
@@ -427,7 +539,7 @@ function ReserveModal({
   }
 
   const qty = Number(quantity);
-  const valid = qty > 0 && qty <= item.quantity_available;
+  const valid = !isExpiredStock(item) && qty > 0 && qty <= availableStock(item);
 
   return (
     <Modal

@@ -85,3 +85,10 @@ export function colorFromString(seed: string): string {
   const hue = Math.abs(hash) % 360;
   return `hsl(${hue} 65% 45%)`;
 }
+
+export function formatRequestedItems(request: Pick<HelpRequestRead, 'requested_items' | 'needs'>): string {
+  if (request.requested_items?.length) return request.requested_items.map(item =>
+    `${item.label}: ${item.quantity == null ? 'quantity not specified' : `${item.quantity} ${item.unit}`}`
+  ).join('\n');
+  return Array.isArray(request.needs) ? request.needs.join(', ') : request.needs || '';
+}

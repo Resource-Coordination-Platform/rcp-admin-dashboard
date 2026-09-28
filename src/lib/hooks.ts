@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
+import { useAuth } from "./auth";
 import type {
   DisasterAlertCreate,
   DisasterAlertRead,
@@ -23,9 +24,12 @@ import type {
   VolunteerDirectoryPage,
   VolunteerDirectoryQuery,
   AuditLogRead,
+  VolunteerReportRead,
 } from "./types";
 
 export const qk = {
+  volunteerReports: (status?: string) =>
+    ["volunteer-reports", status ?? "all"] as const,
   auditLogs: ["audit-logs"] as const,
   alerts: ["alerts"] as const,
   categories: (includeInactive = false) =>
@@ -42,7 +46,7 @@ export const qk = {
   volunteerSkills: ["volunteers", "skills"] as const,
 };
 
-// ---- Categories ----
+// ---- All the Categories ----
 export function useCategories(includeInactive = false) {
   return useQuery({
     queryKey: qk.categories(includeInactive),
@@ -96,6 +100,7 @@ export function useDeactivateCategory() {
 export function useInventory() {
   return useQuery({
     queryKey: qk.inventory,
+    refetchInterval: 60_000,
     queryFn: () => api.get<InventoryItemRead[]>("/api/inventory/items"),
   });
 }
@@ -131,19 +136,21 @@ export function useReserveStock() {
 // ---- Help requests ----
 export function useRequests(status?: RequestStatus) {
   return useQuery({
+    refetchInterval: 5000,
     queryKey: qk.requests(status),
     queryFn: () =>
       api.get<HelpRequestRead[]>("/api/requests", {
-        query: status ? { status } : undefined,
+        query: { limit: 500, ...(status ? { status_filter: status } : {}) },
       }),
   });
 }
 
 export function useGlobalRequests(status?: RequestStatus) {
   return useQuery({
+    refetchInterval: 5000,
     queryKey: ["global-requests", status],
     queryFn: () =>
-      api.get<HelpRequestRead[]>("/api/volunteer/requests", {
+      api.get<HelpRequestRead[]>("/api/requests/help/pending", {
         query: status ? { status } : undefined,
       }),
   });
@@ -254,6 +261,21 @@ export function useVolunteerSkills() {
 }
 
 // ---- Reports ----
+export function useNeedVsStock() {
+  const { claims } = useAuth();
+  return useQuery({
+    queryKey: ["reports", "need-vs-fulfillment", "live-stock", claims?.tenant_id],
+    queryFn: () => api.get<{
+      category_id: string;
+      category: string;
+      unit: string;
+      quantity_needed: number;
+      stock_available: number;
+    }[]>("/api/inventory/need-vs-stock"),
+    refetchInterval: 5000,
+  });
+}
+
 export function useNeedVsFulfillment() {
   return useQuery({
     queryKey: qk.needVsFulfillment,
@@ -282,6 +304,7 @@ export function useEvents() {
   return useQuery({
     queryKey: qk.events,
     queryFn: () => api.get<DisasterEventRead[]>("/api/volunteer/events"),
+    refetchInterval: 5000,
   });
 }
 
@@ -290,6 +313,16 @@ export function useEvent(id: string) {
     queryKey: qk.event(id),
     queryFn: () => api.get<DisasterEventRead>(`/api/volunteer/events/${id}`),
     enabled: !!id,
+    refetchInterval: 5000,
+  });
+}
+
+export function useEventAssignments(id: string) {
+  return useQuery({
+    queryKey: ["event-assignments", id],
+    queryFn: () => api.get<import("./types").EventAssignmentRead[]>(`/api/volunteer/events/${id}/assignments`),
+    enabled: !!id,
+    refetchInterval: 5000,
   });
 }
 
@@ -350,10 +383,44 @@ export function useCloseEvent() {
   });
 }
 
+// ---- Volunteer field reports ----
+export function useVolunteerReports(filters?: { status?: string }) {
+  const params = new URLSearchParams();
+  if (filters?.status && filters.status !== "ALL") params.set("status", filters.status);
+  const qs = params.toString() ? `?${params.toString()}` : "";
+
+  return useQuery({
+    queryKey: qk.volunteerReports(filters?.status),
+    queryFn: () => api.get<VolunteerReportRead[]>(`/api/volunteer/reports${qs}`),
+    refetchInterval: 15000,
+  });
+}
+
+export function useUpdateReportStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      reportId,
+      status,
+    }: {
+      reportId: string;
+      status: "VERIFIED" | "REJECTED" | "PENDING";
+    }) =>
+      api.patch<VolunteerReportRead>(`/api/volunteer/reports/${reportId}/status`, {
+        status,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["volunteer-reports"] });
+    },
+  });
+}
+
 // ---- Team (register coordinator) ----
 export function useCoordinators() {
+  const { claims, hasRole } = useAuth();
   return useQuery({
-    queryKey: ["coordinators"],
+    queryKey: ["coordinators", claims?.tenant_id, claims?.sub],
+    enabled: hasRole("tenant_admin"),
     queryFn: () => api.get<UserRead[]>("/api/auth/tenants/me/users"),
   });
 }
@@ -402,14 +469,13 @@ export function useUpdateCoordinator() {
   });
 }
 
-export function useDeleteCoordinator() {
+export function useSetTeamAccess() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (userId: string) =>
-      api.del(`/api/auth/tenants/me/users/${userId}`),
+    mutationFn: ({ userId, status }: { userId: string; status: "active" | "disabled" }) =>
+      api.patch<UserRead>(`/api/auth/tenants/me/users/${userId}/status`, { status }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["coordinators"] });
-      setTimeout(() => qc.invalidateQueries({ queryKey: ["audit-logs"] }), 1500);
     },
   });
 }

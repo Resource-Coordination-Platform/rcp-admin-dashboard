@@ -5,7 +5,10 @@ import OverviewPage from "./page";
 // get fack rechart vlaues
 vi.mock("recharts", () => ({
   ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
-  BarChart: () => <div data-testid="bar-chart" />,
+  BarChart: ({ data }: any) => (
+    <div data-testid="bar-chart">{JSON.stringify(data)}</div>
+  ),
+  Legend: () => <div />,
   Bar: () => <div />,
   XAxis: () => <div />,
   YAxis: () => <div />,
@@ -19,7 +22,26 @@ vi.mock("recharts", () => ({
 // get fake hooks
 vi.mock("@/lib/hooks", () => ({
   useRequestSummary: () => ({ data: {}, isLoading: false }),
-  useNeedVsFulfillment: () => ({ data: [], isLoading: false }),
+  useNeedVsStock: () => ({
+    data: [
+      {
+        category_id: "rice",
+        category: "Rice",
+        unit: "kg",
+        quantity_needed: 15,
+        stock_available: 40,
+      },
+      {
+        category_id: "water",
+        category: "Water",
+        unit: "litres",
+        quantity_needed: 0,
+        stock_available: 0,
+      },
+    ],
+    isLoading: false,
+  }),
+  useCategories: () => ({ data: [], isLoading: false }),
   useEvents: () => ({ data: [], isLoading: false }),
   useInventory: () => ({ data: [], isLoading: false }),
   useRequests: () => ({ data: [], isLoading: false }),
@@ -35,8 +57,12 @@ describe("OverviewPage", () => {
 
     // check description
     const descElement = screen.getByText(
-      "A live snapshot of your organization's relief operations.",
+      "The live snapshot of the organization's relief operations.",
     );
     expect(descElement).toBeInTheDocument();
+    expect(JSON.parse(screen.getByTestId("bar-chart").textContent!)).toEqual([
+      { name: "Rice", Needs: 15, "Available stock": 40, unit: "kg" },
+      { name: "Water", Needs: 0, "Available stock": 0, unit: "litres" },
+    ]);
   });
 });

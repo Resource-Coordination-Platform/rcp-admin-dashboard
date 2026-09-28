@@ -13,7 +13,7 @@ type Accent =
   | "slate";
 
 const ACCENTS: Record<Accent, { bg: string; fg: string; ring: string }> = {
-  brand: { bg: "bg-brand-50", fg: "text-brand-600", ring: "ring-brand-100" },
+  brand: { bg: "bg-coral-50", fg: "text-coral-700", ring: "ring-coral-200/80" },
   emerald: {
     bg: "bg-emerald-50",
     fg: "text-emerald-600",
@@ -21,7 +21,7 @@ const ACCENTS: Record<Accent, { bg: string; fg: string; ring: string }> = {
   },
   amber: { bg: "bg-amber-50", fg: "text-amber-600", ring: "ring-amber-100" },
   red: { bg: "bg-red-50", fg: "text-red-600", ring: "ring-red-100" },
-  sky: { bg: "bg-sky-50", fg: "text-sky-600", ring: "ring-sky-100" },
+  sky: { bg: "bg-teal-50", fg: "text-teal-700", ring: "ring-teal-200" },
   violet: {
     bg: "bg-violet-50",
     fg: "text-violet-600",

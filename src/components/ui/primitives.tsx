@@ -16,14 +16,14 @@ type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    "bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800",
+    "bg-coral-500 text-white shadow-xs hover:bg-coral-600 active:bg-coral-700",
   secondary:
     "bg-slate-900 text-white shadow-sm hover:bg-slate-800 active:bg-slate-950",
   outline:
     "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900",
   ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
   danger: "bg-red-600 text-white shadow-sm hover:bg-red-700 active:bg-red-800",
-  subtle: "bg-brand-50 text-brand-700 hover:bg-brand-100",
+  subtle: "bg-coral-50 text-coral-800 hover:bg-coral-100",
 };
 
 const BUTTON_SIZES: Record<ButtonSize, string> = {
@@ -100,7 +100,7 @@ export function CardHeader({
   return (
     <div
       className={cn(
-        "flex items-start justify-between gap-4 border-b border-border px-5 py-4",
+        "flex items-start justify-between gap-4 rounded-t-2xl border-b border-coral-200/70 bg-gradient-to-r from-coral-50/80 to-surface px-5 py-4",
         className,
       )}
     >
@@ -131,7 +131,7 @@ const BADGE_TONES: Record<Tone, string> = {
   success: "bg-emerald-50 text-emerald-700 ring-emerald-200",
   warning: "bg-amber-50 text-amber-700 ring-amber-200",
   danger: "bg-red-50 text-red-700 ring-red-200",
-  info: "bg-sky-50 text-sky-700 ring-sky-200",
+  info: "bg-teal-50 text-teal-700 ring-teal-200",
   purple: "bg-violet-50 text-violet-700 ring-violet-200",
 };
 
@@ -152,7 +152,7 @@ export function Badge({
     success: "bg-emerald-500",
     warning: "bg-amber-500",
     danger: "bg-red-500",
-    info: "bg-sky-500",
+    info: "bg-teal-500",
     purple: "bg-violet-500",
   };
   return (
