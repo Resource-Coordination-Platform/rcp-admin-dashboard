@@ -6,6 +6,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Legend,
   Cell,
   Pie,
   PieChart,
@@ -27,7 +28,7 @@ import {
 import {
   useEvents,
   useInventory,
-  useNeedVsFulfillment,
+  useNeedVsStock,
   useRequestSummary,
   useRequests,
   useCategories,
@@ -68,7 +69,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function OverviewPage() {
   const summary = useRequestSummary();
-  const needVsFulfillment = useNeedVsFulfillment();
+  const needVsFulfillment = useNeedVsStock();
   const events = useEvents();
   const inventory = useInventory();
   const recent = useRequests();
@@ -114,8 +115,9 @@ export default function OverviewPage() {
 
   const barData = (needVsFulfillment.data ?? []).map((r) => ({
     name: r.category,
-    Needed: r.quantity_needed,
-    Stock: r.stock_available,
+    Needs: r.quantity_needed,
+    "Available stock": r.stock_available,
+    unit: r.unit,
   }));
 
   const recentRequests = (recent.data ?? []).slice(0, 6);
@@ -207,11 +209,17 @@ export default function OverviewPage() {
         <Card className="lg:col-span-2">
           <CardHeader
             title="Need vs. available stock"
-            description="Current requests compared to available stock, by category."
+            description="Approved request quantities and available stock, by category."
           />
           <div className="p-5">
             {needVsFulfillment.isLoading ? (
               <Skeleton className="h-64 w-full" />
+            ) : needVsFulfillment.isError ? (
+              <EmptyState
+                icon={TriangleAlert}
+                title="Unable to load stock comparison"
+                description="Please try again shortly."
+              />
             ) : barData.length === 0 ? (
               <EmptyState
                 icon={Package}
@@ -219,38 +227,59 @@ export default function OverviewPage() {
                 description="Create resource categories and log requests to see the need-vs-fulfillment picture."
               />
             ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={barData} barGap={6}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke="#e2e8f0"
-                  />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fontSize: 12, fill: "#64748b" }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 12, fill: "#64748b" }}
-                    tickLine={false}
-                    axisLine={false}
-                    allowDecimals={false}
-                  />
-                  <Tooltip
-                    cursor={{ fill: "rgba(148,163,184,0.08)" }}
-                    contentStyle={{
-                      borderRadius: 12,
-                      border: "1px solid #e2e8f0",
-                      fontSize: 13,
-                      boxShadow: "0 10px 30px -12px rgba(15,23,42,0.18)",
-                    }}
-                  />
-                  <Bar dataKey="Needed" fill="#3563ff" radius={[6, 6, 0, 0]} />
-                  <Bar dataKey="Stock" fill="#10b981" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="overflow-x-auto">
+                <div style={{ minWidth: Math.max(480, barData.length * 140) }}>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <BarChart data={barData} barGap={6}>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="#e2e8f0"
+                      />
+                      <XAxis
+                        dataKey="name"
+                        interval={0}
+                        angle={-25}
+                        textAnchor="end"
+                        height={80}
+                        tick={{ fontSize: 12, fill: "#64748b" }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 12, fill: "#64748b" }}
+                        tickLine={false}
+                        axisLine={false}
+                        allowDecimals={false}
+                      />
+                      <Tooltip
+                        formatter={(value, name, item) => [
+                          `${value} ${item.payload.unit}`,
+                          name,
+                        ]}
+                        cursor={{ fill: "rgba(148,163,184,0.08)" }}
+                        contentStyle={{
+                          borderRadius: 12,
+                          border: "1px solid #e2e8f0",
+                          fontSize: 13,
+                          boxShadow: "0 10px 30px -12px rgba(15,23,42,0.18)",
+                        }}
+                      />
+                      <Legend />
+                      <Bar
+                        dataKey="Needs"
+                        fill="#3563ff"
+                        radius={[6, 6, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="Available stock"
+                        fill="#10b981"
+                        radius={[6, 6, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             )}
           </div>
         </Card>

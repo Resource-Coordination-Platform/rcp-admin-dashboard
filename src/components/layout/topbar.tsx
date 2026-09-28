@@ -36,7 +36,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
     : (claims?.roles[0] ?? "member");
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-surface/80 px-4 backdrop-blur lg:px-8">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-coral-200/60 bg-surface/95 px-4 backdrop-blur lg:px-8">
       <button
         onClick={onMenu}
         className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
@@ -44,6 +44,10 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
       >
         <Menu className="h-5 w-5" />
       </button>
+
+      <div className="flex items-center gap-2.5 lg:hidden">
+        <img src="/logo.png" alt="RCP Logo" className="h-8 w-8 rounded-lg object-contain" />
+      </div>
 
       <div className="flex-1">
         <h2 className="text-sm font-semibold text-slate-900 lg:text-base">

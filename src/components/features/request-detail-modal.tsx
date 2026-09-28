@@ -41,6 +41,7 @@ import {
   colorFromString,
   formatDateTime,
   formatRequestLocation,
+  formatRequestedItems,
   humanizeSkill,
   initials,
 } from "@/lib/format";
@@ -81,7 +82,7 @@ export function RequestDetailModal({
   // The actions offered come from the category's own approval flow, not a
   // fixed map — that is what makes the workflow engine customizable. Anything
   // else here would offer buttons the backend rejects.
-  const nextStatuses = allowedNext(category?.workflow, currentStatus);
+  const nextStatuses = request.delivery_status ? [] : allowedNext(category?.workflow, currentStatus);
 
   // Dispatch is gated on Approved/In progress by the logistics service
   // (dispatch.assign_task), independently of the category's flow — so a custom
@@ -89,12 +90,12 @@ export function RequestDetailModal({
   // the two it is rather than telling the admin to "approve" a state their
   // flow does not have.
   const canDispatch =
-    currentStatus === "approved" || currentStatus === "in_progress";
+    !request.delivery_status && (currentStatus === "approved" || currentStatus === "in_progress");
   const flowReaches = reachableFrom(
     initialStatus(category?.workflow),
     category?.workflow?.transitions ?? DEFAULT_TRANSITIONS,
   );
-  const dispatchHint = canDispatch
+  const dispatchHint = request.delivery_status ? "Manage this request in Help Requests. Receipt requires both confirmations." : canDispatch
     ? "Assign an available volunteer to fulfil this request."
     : flowReaches.has("approved") || flowReaches.has("in_progress")
       ? "Approve this request first to enable dispatch."
@@ -132,6 +133,13 @@ export function RequestDetailModal({
       );
     }
   }
+
+  if (request.disaster_type || request.delivery_status) return <Modal open onClose={onClose} title="Help request">
+    <p className="text-sm font-medium">{formatRequestedItems(request)}</p>
+    <p className="text-sm mt-2 text-slate-600">{request.description}</p>
+    <p className="text-sm mt-4">Verification, stock reservation, volunteer assignment and delivery confirmations are managed together in Help Requests.</p>
+    <a href="/requests" className="inline-block mt-4 font-medium text-brand-600">Open Help Requests</a>
+  </Modal>;
 
   return (
     <Modal
@@ -203,18 +211,16 @@ export function RequestDetailModal({
               value={request.disaster_type}
             />
           )}
-          {request.needs && (
+          {(request.needs || request.requested_items?.length) && (
             <Detail
               icon={Package}
               label="Needs"
               value={
-                Array.isArray(request.needs)
-                  ? request.needs.join(", ")
-                  : String(request.needs)
+                formatRequestedItems(request)
               }
             />
           )}
-          {request.quantity_needed !== undefined && (
+          {!request.requested_items?.length && request.quantity_needed !== undefined && (
             <Detail
               icon={Package}
               label="Quantity needed"

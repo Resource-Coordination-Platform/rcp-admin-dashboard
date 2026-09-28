@@ -9,7 +9,6 @@ import {
   Megaphone,
   Radio,
   Tags,
-  Truck,
   Users,
   UsersRound,
 } from "lucide-react";
@@ -20,6 +19,7 @@ export interface NavItem {
   href: string;
   icon: LucideIcon;
   description: string;
+  adminOnly?: boolean;
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -30,10 +30,10 @@ export const NAV_ITEMS: NavItem[] = [
     description: "KPIs & activity",
   },
   {
-    label: "GIS Map View",
+    label: "Safe zones",
     href: "/map",
     icon: MapPin,
-    description: "Spatial command center",
+    description: "Relief camps & medical centres",
   },
   {
     label: "Help Requests",
@@ -56,6 +56,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: "Emergency Alerts",
     href: "/alerts",
+    adminOnly: true,
     icon: Megaphone,
     description: "Broadcast warnings",
   },
@@ -84,15 +85,10 @@ export const NAV_ITEMS: NavItem[] = [
     description: "Find available",
   },
   {
-    label: "Dispatch",
-    href: "/dispatch",
-    icon: Truck,
-    description: "Task assignment",
-  },
-  {
     label: "Team",
     href: "/team",
+    adminOnly: true,
     icon: Users,
-    description: "Coordinators",
+    description: "Admins & coordinators",
   },
 ];

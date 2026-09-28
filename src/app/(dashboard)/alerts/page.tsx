@@ -30,7 +30,10 @@ import { BroadcastAlertModal } from "@/components/features/broadcast-alert-modal
 
 
 
+import { useToast } from "@/components/ui/toast";
+
 export default function AlertsPage() {
+  const toast = useToast();
   const queryClient = useQueryClient();
   const { data: serverAlerts, isLoading } = useAlerts();
 
@@ -38,14 +41,29 @@ export default function AlertsPage() {
     mutationFn: async ({ id, status }: { id: string; status: "BROADCASTING" | "CLOSED" }) => {
       return api.patch(`/api/alerts/${id}/status`, { status });
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["alerts"] }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["alerts"] });
+      toast.success(
+        "Alert Updated",
+        `Alert status changed to ${variables.status}.`,
+      );
+    },
+    onError: (err: any) => {
+      toast.error("Failed to update alert", err?.detail || err?.message || "Unknown error");
+    },
   });
 
   const deleteAlert = useMutation({
     mutationFn: async (id: string) => {
       return api.del(`/api/alerts/${id}`);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["alerts"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["alerts"] });
+      toast.success("Alert Deleted", "The emergency alert has been removed.");
+    },
+    onError: (err: any) => {
+      toast.error("Failed to delete alert", err?.detail || err?.message || "Unknown error");
+    },
   });
 
   const [search, setSearch] = useState("");
@@ -174,30 +192,43 @@ export default function AlertsPage() {
                   </TD>
 
                   <TD className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1.5">
                       {a.status === "BROADCASTING" ? (
                         <Button
                           variant="secondary"
                           size="sm"
+                          title="Mark alert as CLOSED"
                           onClick={() => updateStatus.mutate({ id: a.id, status: "CLOSED" })}
                           disabled={updateStatus.isPending}
                         >
-                          <CheckCircle className="h-3.5 w-3.5" />
+                          <CheckCircle className="mr-1 h-3.5 w-3.5 text-emerald-600" />
+                          Close
                         </Button>
                       ) : (
                         <Button
-                          variant="danger"
+                          variant="secondary"
                           size="sm"
-                          onClick={() => {
-                            if (window.confirm("Are you sure you want to delete this closed alert?")) {
-                              deleteAlert.mutate(a.id);
-                            }
-                          }}
-                          disabled={deleteAlert.isPending}
+                          title="Reopen and broadcast this alert"
+                          onClick={() => updateStatus.mutate({ id: a.id, status: "BROADCASTING" })}
+                          disabled={updateStatus.isPending}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Radio className="mr-1 h-3.5 w-3.5 text-amber-600" />
+                          Reopen
                         </Button>
                       )}
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        title="Delete alert permanently"
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to permanently delete alert "${a.title}"?`)) {
+                            deleteAlert.mutate(a.id);
+                          }
+                        }}
+                        disabled={deleteAlert.isPending}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                   </TD>
                 </TR>

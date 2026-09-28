@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Sidebar } from "@/components/layout/sidebar";
+import { NAV_ITEMS } from "@/components/layout/nav";
 import { Topbar } from "@/components/layout/topbar";
 
 export default function DashboardLayout({
@@ -13,14 +14,20 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, hasRole } = useAuth();
+  const pathname = usePathname();
+  const forbidden = !hasRole("tenant_admin") && NAV_ITEMS.some((item) => item.adminOnly && (pathname === item.href || pathname.startsWith(item.href + "/")));
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) router.replace("/login");
   }, [isAuthenticated, isLoading, router]);
 
-  if (isLoading || !isAuthenticated) {
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && forbidden) router.replace("/dashboard");
+  }, [isLoading, isAuthenticated, forbidden, router]);
+
+  if (isLoading || !isAuthenticated || forbidden) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-6 w-6 animate-spin text-brand-500" />

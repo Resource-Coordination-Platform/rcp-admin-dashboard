@@ -9,14 +9,15 @@ import {
   UserPlus,
   Users,
   Edit2,
-  Trash2,
+  PauseCircle,
+  PlayCircle,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { 
   useCoordinators, 
   useRegisterCoordinator,
   useUpdateCoordinator,
-  useDeleteCoordinator,
+  useSetTeamAccess,
 } from "@/lib/hooks";
 import { ApiError } from "@/lib/api";
 import { colorFromString, initials, relativeTime } from "@/lib/format";
@@ -36,22 +37,22 @@ import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 
 export default function TeamPage() {
-  const { profile } = useAuth();
+  const { profile, hasRole } = useAuth();
   const [open, setOpen] = useState(false);
   const [editUser, setEditUser] = useState<UserRead | null>(null);
-  const [deleteUser, setDeleteUser] = useState<UserRead | null>(null);
-  const { data: coordinators, isLoading } = useCoordinators();
-  const isAdmin = profile?.user_type === "TENANT_ADMIN";
+  const [accessUser, setAccessUser] = useState<UserRead | null>(null);
+  const { data: coordinators, isLoading, isError, refetch } = useCoordinators();
+  const isAdmin = hasRole("tenant_admin");
   
   const updateMutation = useUpdateCoordinator();
-  const deleteMutation = useDeleteCoordinator();
+  const accessMutation = useSetTeamAccess();
   const toast = useToast();
 
   return (
     <div>
       <PageHeader
         title="Team"
-        description="Provision coordinators who help triage requests, manage inventory and dispatch volunteers."
+        description="View your tenant admins and coordinators. Hold or restore their access when needed."
         actions={
           isAdmin ? (
             <Button onClick={() => setOpen(true)} disabled={!profile?.tenantSlug}>
@@ -107,10 +108,12 @@ export default function TeamPage() {
               <Skeleton key={i} className="h-16 w-full" />
             ))}
           </div>
+        ) : isError ? (
+          <EmptyState icon={Users} title="Could not load team" description="Please try again." action={<Button onClick={() => refetch()}>Retry</Button>} />
         ) : !coordinators || coordinators.length === 0 ? (
           <EmptyState
             icon={Users}
-            title="No coordinators added yet"
+            title="No team members found"
             description="Invite a coordinator to share the operational workload."
             action={
               isAdmin ? (
@@ -137,7 +140,7 @@ export default function TeamPage() {
                 <div className="min-w-0 flex-1">
                   <p className="flex items-center gap-1.5 font-medium text-slate-900">
                     {u.full_name}
-                    <BadgeCheck className="h-4 w-4 text-emerald-500" />
+                    {u.status === "active" && <BadgeCheck className="h-4 w-4 text-emerald-500" />}
                   </p>
                   <p className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
@@ -157,19 +160,23 @@ export default function TeamPage() {
                     <Badge tone={u.user_type === "TENANT_ADMIN" ? "brand" : "purple"}>
                       {u.user_type === "TENANT_ADMIN" ? "Admin" : "Coordinator"}
                     </Badge>
-                    {isAdmin && profile?.id !== u.id && (
+                    <Badge tone={u.status === "active" ? "success" : "warning"}>{u.status === "active" ? "Active" : u.status === "disabled" ? "On hold" : u.status}</Badge>
+                    {isAdmin && profile?.id !== u.id && u.status !== "banned" && (
                       <div className="flex items-center gap-1">
                         <button
+                          aria-label={`Edit ${u.full_name}`}
                           onClick={() => setEditUser(u)}
                           className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                         >
                           <Edit2 className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => setDeleteUser(u)}
+                          title={u.status === "active" ? "Hold access" : "Restore access"}
+                          aria-label={`${u.status === "active" ? "Hold" : "Restore"} access for ${u.full_name}`}
+                          onClick={() => setAccessUser(u)}
                           className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {u.status === "active" ? <PauseCircle className="h-4 w-4" /> : <PlayCircle className="h-4 w-4" />}
                         </button>
                       </div>
                     )}
@@ -200,31 +207,31 @@ export default function TeamPage() {
         />
       )}
 
-      {deleteUser && (
+      {accessUser && (
         <Modal
           open
-          onClose={() => setDeleteUser(null)}
-          title="Remove coordinator?"
-          description={`Are you sure you want to remove ${deleteUser.full_name}? They will no longer be able to access the console.`}
+          onClose={() => setAccessUser(null)}
+          title={accessUser.status === "active" ? "Hold access?" : "Restore access?"}
+          description={accessUser.status === "active" ? `${accessUser.full_name} will be signed out and unable to log in until you restore access.` : `${accessUser.full_name} will be able to log in again.`}
           footer={
             <>
-              <Button variant="outline" onClick={() => setDeleteUser(null)}>
+              <Button variant="outline" onClick={() => setAccessUser(null)}>
                 Cancel
               </Button>
               <Button
                 variant="danger"
-                loading={deleteMutation.isPending}
+                loading={accessMutation.isPending}
                 onClick={async () => {
                   try {
-                    await deleteMutation.mutateAsync(deleteUser.id);
-                    toast.success("Coordinator removed", "They no longer have access.");
-                    setDeleteUser(null);
+                    await accessMutation.mutateAsync({ userId: accessUser.id, status: accessUser.status === "active" ? "disabled" : "active" });
+                    toast.success("Access updated", accessUser.status === "active" ? "Member is now on hold." : "Member can sign in again.");
+                    setAccessUser(null);
                   } catch (err) {
-                    toast.error("Error", "Could not remove coordinator.");
+                    toast.error("Could not update access", err instanceof ApiError ? err.detail : "Please try again.");
                   }
                 }}
               >
-                Remove
+                {accessUser.status === "active" ? "Hold access" : "Restore access"}
               </Button>
             </>
           }
@@ -371,7 +378,7 @@ function EditCoordinatorModal({
     <Modal
       open
       onClose={onClose}
-      title="Edit coordinator"
+      title="Edit team member"
       description={`Update profile details for ${user.email}`}
       footer={
         <>

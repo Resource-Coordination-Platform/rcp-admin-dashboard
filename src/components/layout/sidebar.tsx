@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShieldCheck, X } from "lucide-react";
 import { cn } from "@/lib/format";
+import { useAuth } from "@/lib/auth";
 import { NAV_ITEMS } from "./nav";
 
 function isActive(pathname: string, href: string) {
@@ -19,6 +20,7 @@ export function Sidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const { hasRole } = useAuth();
 
   return (
     <>
@@ -39,12 +41,12 @@ export function Sidebar({
         {/* Brand */}
         <div className="flex h-16 items-center justify-between px-5">
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 shadow-lg shadow-brand-600/30">
-              <ShieldCheck className="h-5 w-5 text-white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 p-1 backdrop-blur shadow-md shadow-brand-600/30">
+              <img src="/logo.png" alt="RCP Logo" className="h-full w-full object-contain rounded-lg" />
             </div>
             <div className="leading-tight">
-              <p className="text-sm font-semibold text-white">RCP Admin</p>
-              <p className="text-[11px] text-sidebar-muted">
+              <p className="text-sm font-bold text-white tracking-tight">RCP Admin</p>
+              <p className="text-[11px] text-sidebar-muted font-medium">
                 Resource Coordination
               </p>
             </div>
@@ -63,7 +65,7 @@ export function Sidebar({
           <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Coordination
           </p>
-          {NAV_ITEMS.map((item) => {
+          {NAV_ITEMS.filter((item) => !item.adminOnly || hasRole("tenant_admin")).map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
             return (
@@ -74,7 +76,7 @@ export function Sidebar({
                 className={cn(
                   "group flex items-center gap-3 rounded-xl px-3 py-3 text-base font-medium transition-colors",
                   active
-                    ? "bg-brand-600 text-white shadow-lg shadow-brand-600/20"
+                    ? "bg-coral-500 text-white shadow-md shadow-coral-500/20"
                     : "text-slate-300 hover:bg-sidebar-hover hover:text-white",
                 )}
               >
