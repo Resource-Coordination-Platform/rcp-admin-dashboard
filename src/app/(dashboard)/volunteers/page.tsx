@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MapPin, Phone, RotateCcw, Search, UsersRound } from "lucide-react";
+import { MapPin, Phone, RotateCcw, Search, UsersRound, X } from "lucide-react";
 import {
   useDistricts,
   useVolunteerDirectory,
@@ -38,6 +38,7 @@ export default function VolunteersPage() {
   const [district, setDistrict] = useState("");
   const [availableOnly, setAvailableOnly] = useState(false);
   const [page, setPage] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const [debounced, setDebounced] = useState({ q: "", city: "" });
   useEffect(() => {
@@ -48,6 +49,7 @@ export default function VolunteersPage() {
   // Any filter change starts back at the first page.
   useEffect(() => {
     setPage(0);
+    setSelectedIds(new Set());
   }, [debounced.q, debounced.city, skill, district, availableOnly]);
 
   const districts = useDistricts();
@@ -80,6 +82,14 @@ export default function VolunteersPage() {
     setSkill("");
     setDistrict("");
     setAvailableOnly(false);
+    setSelectedIds(new Set());
+  }
+
+  function toggleSelection(id: string, checked: boolean) {
+    const next = new Set(selectedIds);
+    if (checked) next.add(id);
+    else next.delete(id);
+    setSelectedIds(next);
   }
 
   return (
@@ -220,7 +230,12 @@ export default function VolunteersPage() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {volunteers.map((v) => (
-              <VolunteerCard key={v.id} volunteer={v} />
+              <VolunteerCard 
+                key={v.id} 
+                volunteer={v} 
+                isSelected={selectedIds.has(v.id)}
+                onToggle={(checked) => toggleSelection(v.id, checked)}
+              />
             ))}
           </div>
 
@@ -249,19 +264,55 @@ export default function VolunteersPage() {
           )}
         </>
       )}
+
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white px-6 py-4 rounded-full shadow-xl border border-slate-200 z-50 flex items-center gap-4 transition-all animate-in slide-in-from-bottom-8">
+          <span className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <span className="bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full text-xs">{selectedIds.size}</span>
+            Selected
+          </span>
+          <div className="h-4 w-px bg-slate-300"></div>
+          <Button size="sm" variant="outline" onClick={() => alert("Manual Dispatch feature coming soon!")}>
+            Assign to Event
+          </Button>
+          <Button size="sm" onClick={() => alert("Send Message feature coming soon!")}>
+            Send Message
+          </Button>
+          <button onClick={() => setSelectedIds(new Set())} className="ml-2 text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-slate-100">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
 function VolunteerCard({
   volunteer: v,
+  isSelected,
+  onToggle,
 }: {
   volunteer: VolunteerDirectoryEntry;
+  isSelected: boolean;
+  onToggle: (checked: boolean) => void;
 }) {
   const location = [v.city, v.base_district].filter(Boolean).join(", ");
   return (
-    <Card className="flex flex-col p-5">
+    <Card 
+      className={`flex flex-col p-5 transition-colors cursor-pointer hover:border-slate-300 ${isSelected ? "border-brand-500 bg-brand-50/50" : ""}`}
+      onClick={() => onToggle(!isSelected)}
+    >
       <div className="flex items-center gap-3">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={(e) => {
+            e.stopPropagation();
+            onToggle(e.target.checked);
+          }}
+          className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-600"
+          onClick={(e) => e.stopPropagation()}
+        />
         <div
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
           style={{ backgroundColor: colorFromString(v.full_name) }}

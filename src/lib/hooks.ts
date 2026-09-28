@@ -46,7 +46,7 @@ export const qk = {
   volunteerSkills: ["volunteers", "skills"] as const,
 };
 
-// ---- Categories ----
+// ---- All the Categories ----
 export function useCategories(includeInactive = false) {
   return useQuery({
     queryKey: qk.categories(includeInactive),
@@ -323,6 +323,22 @@ export function useEventAssignments(id: string) {
     queryFn: () => api.get<import("./types").EventAssignmentRead[]>(`/api/volunteer/events/${id}/assignments`),
     enabled: !!id,
     refetchInterval: 5000,
+  });
+}
+
+export function useUpdateEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      id: string;
+      title: string;
+      description: string | null;
+      requirements: Array<{ skill: string; required_count: number }>;
+    }) => api.patch<DisasterEventRead>(`/api/volunteer/events/${data.id}`, data),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(qk.event(updated.id), updated);
+      queryClient.invalidateQueries({ queryKey: qk.events });
+    },
   });
 }
 

@@ -180,11 +180,10 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
-            <Field label="Organization slug" required hint="e.g. kolonnawa">
+            <Field label="Organization slug" required >
               <Input
                 value={tenantSlug}
                 onChange={(e) => setTenantSlug(e.target.value)}
-                placeholder="relief-org-lk"
                 autoComplete="organization"
                 required
               />
@@ -194,7 +193,6 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@relief-org.lk"
                 autoComplete="email"
                 required
               />
@@ -251,10 +249,7 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            Portal access is provisioned by your platform operator during tenant
-            onboarding.
-          </p>
+         
         </div>
       </div>
     </div>
