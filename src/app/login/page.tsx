@@ -162,7 +162,7 @@ export default function LoginPage() {
             Sign in to your organization's admin console.
           </p>
 
-          {/* Dynamic Branding Display */}
+          {/* Dynamic Branding Display **/}
           {tenantInfo && (
             <div className="mt-6 flex items-center gap-3 rounded-xl border border-brand-200 bg-brand-50/50 p-3 transition-all">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white font-bold">
