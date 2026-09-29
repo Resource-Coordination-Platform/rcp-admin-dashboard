@@ -1,6 +1,5 @@
 import {
   Boxes,
-  ClipboardList,
   FileText,
   LayoutDashboard,
   LifeBuoy,
@@ -59,12 +58,6 @@ export const NAV_ITEMS: NavItem[] = [
     adminOnly: true,
     icon: Megaphone,
     description: "Broadcast warnings",
-  },
-  {
-    label: "Audit Logs",
-    href: "/audit-logs",
-    icon: ClipboardList,
-    description: "Operational trail",
   },
   {
     label: "Reports",
