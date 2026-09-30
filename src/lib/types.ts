@@ -172,18 +172,13 @@ export interface ResourceCategoryCreate {
   name: string;
   description?: string | null;
   unit?: string;
-  form_schema?: FormFieldSpec[] | null;
-  workflow?: WorkflowDefinition | null;
 }
 
-/** Partial update; an explicit null on form_schema/workflow clears it back to
- * the platform default. Keys left out are untouched. */
+/** Partial update. Keys left out are untouched. */
 export interface ResourceCategoryUpdate {
   name?: string;
   description?: string | null;
   unit?: string;
-  form_schema?: FormFieldSpec[] | null;
-  workflow?: WorkflowDefinition | null;
   is_active?: boolean;
 }
 
