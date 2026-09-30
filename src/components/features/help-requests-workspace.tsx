@@ -47,7 +47,7 @@ export default function HelpRequestsWorkspace() {
     } catch (error) { toast.error('Handover failed', error instanceof Error ? error.message : 'Please retry'); }
   };
   return <div className="space-y-6">
-    <PageHeader title="Help Requests" description="Your centre's requests: verify needs, reserve supplies, send a volunteer and track confirmed receipt." />
+    <PageHeader title="Help Requests" description="Victim requests arrive after Grama Niladhari verification. Reserve supplies, send a volunteer and track confirmed receipt." />
     <div className="grid gap-3 sm:grid-cols-4">
       {[
         ['Awaiting verification', (requests.data ?? []).filter(r => stage(r) === 'PENDING').length],
@@ -99,7 +99,7 @@ export default function HelpRequestsWorkspace() {
         </div>}
       </Card>;
     })}
-    {!requests.isLoading && !requests.error && !rows.length && <Card className="p-8 text-center text-slate-500">No requests match this view. New victim requests appear under their assigned centre.</Card>}
+    {!requests.isLoading && !requests.error && !rows.length && <Card className="p-8 text-center text-slate-500">No requests match this view. Victim requests appear here after Grama Niladhari verification.</Card>}
     <p className="text-xs text-slate-500">Updates every 5 seconds. A delivery completes only after code verification and both receipt confirmations.</p>
     {reserve && <ClaimRequestModal key={reserve.id} request={reserve} isOpen onClose={() => setReserve(null)} />}
     <Modal open={!!handover} onClose={() => setHandover(null)} title="Confirm physical handover" footer={<><Button variant="outline" onClick={() => setHandover(null)}>Cancel</Button><Button loading={action.isPending} onClick={confirmHandover}>Goods handed over</Button></>}>
