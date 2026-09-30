@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -15,7 +14,13 @@ import {
   Pencil,
   Plus,
 } from "lucide-react";
-import { useCloseEvent, useEvent, useEventAssignments, useRebroadcastEvent } from "@/lib/hooks";
+import {
+  useCloseEvent,
+  useEvent,
+  useEventAssignments,
+  useRebroadcastEvent,
+  useUpdateEvent,
+} from "@/lib/hooks";
 import type { AssignmentStatus } from "@/lib/types";
 import { ApiError } from "@/lib/api";
 import { formatDateTime, humanizeSkill, pct } from "@/lib/format";
