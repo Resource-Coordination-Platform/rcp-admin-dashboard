@@ -104,12 +104,22 @@ export default function InventoryPage() {
         unit:
           categories.data?.find((category) => category.id === id)?.unit ?? "",
         items: [...members].sort(
-          (a, b) =>
-            a.name.localeCompare(b.name) ||
-            (a.storage_location ?? "").localeCompare(
-              b.storage_location ?? "",
-            ) ||
-            a.id.localeCompare(b.id),
+          (a, b) => {
+            // Expired items first, then low stock, then normal
+            const aExpired = isExpiredStock(a, today) ? 0 : 1;
+            const bExpired = isExpiredStock(b, today) ? 0 : 1;
+            if (aExpired !== bExpired) return aExpired - bExpired;
+            const aLow = isLowStock(a, today) ? 0 : 1;
+            const bLow = isLowStock(b, today) ? 0 : 1;
+            if (aLow !== bLow) return aLow - bLow;
+            return (
+              a.name.localeCompare(b.name) ||
+              (a.storage_location ?? "").localeCompare(
+                b.storage_location ?? "",
+              ) ||
+              a.id.localeCompare(b.id)
+            );
+          },
         ),
         available: members.reduce(
           (sum, item) => sum + availableStock(item, today),
@@ -307,13 +317,20 @@ export default function InventoryPage() {
                           key={item.id}
                           className={
                             expired
-                              ? "bg-red-50 border-l-4 border-l-red-500"
+                              ? "bg-red-50/80 border-l-4 border-l-red-500 !bg-red-50"
+                              : lowStock
+                              ? "bg-amber-50/40 border-l-4 border-l-amber-400"
                               : undefined
                           }
                         >
                           <TD>
-                            <p className="font-semibold text-slate-900">
+                            <p className={`font-semibold ${expired ? "text-red-700" : "text-slate-900"}`}>
                               {item.name}
+                              {expired && (
+                                <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700 ring-1 ring-inset ring-red-300">
+                                  EXPIRED
+                                </span>
+                              )}
                             </p>
                             <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                               <MapPin className="h-3 w-3 text-brand-600" />
@@ -321,7 +338,7 @@ export default function InventoryPage() {
                             </p>
                           </TD>
                           <TD className="text-right">
-                            <span className="font-semibold tabular-nums text-emerald-700">
+                            <span className={`font-semibold tabular-nums ${expired ? "text-red-600 line-through" : "text-emerald-700"}`}>
                               {availableStock(item, today).toLocaleString()}
                             </span>
                             <span className="ml-1 text-xs text-muted-foreground">
@@ -359,7 +376,7 @@ export default function InventoryPage() {
                                 )}
                             </div>
                           </TD>
-                          <TD className="text-slate-600">
+                          <TD className={expired ? "font-semibold text-red-600" : "text-slate-600"}>
                             {formatDate(item.expiry_date)}
                           </TD>
                           <TD className="text-right">

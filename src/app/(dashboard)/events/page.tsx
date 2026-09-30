@@ -680,41 +680,31 @@ function DeclaredEventCard({
 
   return (
     <Link href={`/events/${e.id}`}>
-      <Card className="group h-full p-4 transition hover:border-brand-300 hover:shadow-card">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
+      <Card className="group p-3.5 transition hover:border-brand-300 hover:shadow-card">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
             <h3 className="truncate text-sm font-semibold text-slate-900 group-hover:text-brand-700">
               {e.title}
             </h3>
-            <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <MapPin className="h-3.5 w-3.5 text-brand-600 shrink-0" />
+            <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3 text-brand-600 shrink-0" />
               <span className="font-medium text-slate-700">{e.source_district}</span>
               <span className="text-slate-300">·</span>
               {formatDateTime(e.created_at)}
+              {coordinates && (
+                <>
+                  <span className="text-slate-300">·</span>
+                  <span className="text-[11px] text-slate-400">
+                    {coordinates.lat.toFixed(4)}, {coordinates.lng.toFixed(4)}
+                  </span>
+                </>
+              )}
             </p>
           </div>
           <EventStatusBadge status={e.status} />
         </div>
 
-        {coordinates && (
-          <div className="mt-3 overflow-hidden rounded-lg border border-border bg-slate-50">
-            {staticMapUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={staticMapUrl}
-                alt={`Map preview for ${e.title}`}
-                loading="lazy"
-                className="h-24 w-full object-cover"
-              />
-            ) : (
-              <div className="px-3 py-1.5 text-[11px] text-muted-foreground">
-                Location pinned at {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="mt-2 flex flex-wrap gap-1">
           <BroadcastBadge type={e.broadcast_type} />
           {e.requirements.slice(0, 3).map((r) => (
             <Badge key={r.id} tone="neutral">
@@ -726,8 +716,8 @@ function DeclaredEventCard({
           )}
         </div>
 
-        <div className="mt-3">
-          <div className="mb-1 flex items-center justify-between text-xs">
+        <div className="mt-2">
+          <div className="mb-0.5 flex items-center justify-between text-xs">
             <span className="flex items-center gap-1 text-muted-foreground">
               <Users className="h-3 w-3" />
               Team fill
@@ -742,7 +732,7 @@ function DeclaredEventCard({
           />
         </div>
 
-        <div className="mt-3 flex items-center justify-end text-xs font-semibold text-brand-600 opacity-90 transition group-hover:opacity-100 group-hover:translate-x-0.5">
+        <div className="mt-2 flex items-center justify-end text-xs font-semibold text-brand-600 opacity-90 transition group-hover:opacity-100 group-hover:translate-x-0.5">
           Manage Assignments <ArrowRight className="ml-1 h-3.5 w-3.5" />
         </div>
       </Card>
