@@ -27,7 +27,7 @@ export default function HelpRequestsWorkspace() {
     const current = stage(request);
     const matchesFilter = filter === 'all' || current === filter || (filter === 'COMPLETED' && current === 'FULFILLED');
     return matchesFilter && `${request.id} ${request.description} ${formatRequestedItems(request)} ${byRequest.get(request.id)?.volunteer_name || ''}`.toLowerCase().includes(search.toLowerCase());
-  });
+  }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   const busy = verify.isPending || action.isPending;
   const reliable = !deliveries.isLoading && !deliveries.error && !requests.error;
   const verifyRequest = async (request: HelpRequestRead) => {
