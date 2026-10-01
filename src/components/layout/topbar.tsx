@@ -14,7 +14,8 @@ import { initials } from "@/lib/format";
 import { NAV_ITEMS } from "./nav";
 import { ProfileSecurityModal } from "@/components/features/profile-security-modal";
 
-function currentTitle(pathname: string): string {
+function currentTitle(pathname: string, tenantDisplayName?: string): string {
+  if (pathname === "/dashboard" && tenantDisplayName) return tenantDisplayName;
   const match = NAV_ITEMS.find(
     (i) =>
       pathname === i.href ||
@@ -28,6 +29,13 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
   const { profile, claims, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+
+  const tenantDisplayName = profile?.tenantSlug
+    ? profile.tenantSlug
+        .split("-")
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" ")
+    : undefined;
 
   const email = profile?.email ?? "admin";
   const name = profile?.full_name?.trim() || email.split("@")[0];
@@ -51,7 +59,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
 
       <div className="flex-1">
         <h2 className="text-sm font-semibold text-slate-900 lg:text-base">
-          {currentTitle(pathname)}
+          {currentTitle(pathname, tenantDisplayName)}
         </h2>
       </div>
 

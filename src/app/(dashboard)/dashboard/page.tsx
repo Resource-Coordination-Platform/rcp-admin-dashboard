@@ -56,6 +56,7 @@ import {
 } from "@/components/ui/badges";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { RequestDetailModal } from "@/components/features/request-detail-modal";
+import { useAuth } from "@/lib/auth";
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "#94a3b8",
@@ -74,8 +75,17 @@ export default function OverviewPage() {
   const inventory = useInventory();
   const recent = useRequests();
   const categories = useCategories(true);
+  const { profile } = useAuth();
   const [selectedRequest, setSelectedRequest] =
     useState<HelpRequestRead | null>(null);
+
+  // Derive tenant display name from slug
+  const tenantName = profile?.tenantSlug
+    ? profile.tenantSlug
+        .split("-")
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" ")
+    : "Command Center";
 
   const categoryById = useMemo(() => {
     const map = new Map(
@@ -124,10 +134,91 @@ export default function OverviewPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Overview"
-        description="The live snapshot of the organization's relief operations."
-      />
+      {/* 3D Glass Tenant Hero Banner */}
+      <div
+        className="mb-2"
+        style={{ perspective: "1200px" }}
+      >
+        <div
+          className="glass-hero-banner relative overflow-hidden rounded-2xl p-6 sm:p-8"
+          style={{
+            background: "rgba(255, 255, 255, 0.3)",
+            backdropFilter: "blur(50px) saturate(2)",
+            WebkitBackdropFilter: "blur(50px) saturate(2)",
+            border: "1px solid rgba(255, 255, 255, 0.5)",
+            boxShadow:
+              "0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(255, 255, 255, 0.3)",
+            transform: "rotateX(2deg) rotateY(-1deg)",
+            transformStyle: "preserve-3d",
+            transition: "transform 0.4s ease, box-shadow 0.4s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "rotateX(0deg) rotateY(0deg) translateZ(8px)";
+            e.currentTarget.style.boxShadow =
+              "0 16px 48px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(255, 255, 255, 0.4)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "rotateX(2deg) rotateY(-1deg)";
+            e.currentTarget.style.boxShadow =
+              "0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(255, 255, 255, 0.3)";
+          }}
+        >
+          {/* Glass refraction highlight */}
+          <div
+            className="pointer-events-none absolute inset-0 rounded-2xl"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,0.5) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.15) 100%)",
+            }}
+          />
+          {/* Subtle animated shimmer */}
+          <div
+            className="pointer-events-none absolute inset-0 rounded-2xl"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)",
+              backgroundSize: "200% 100%",
+              animation: "hero-shimmer 4s ease-in-out infinite",
+            }}
+          />
+
+          <div className="relative z-10 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-xl"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.4)",
+                    backdropFilter: "blur(20px)",
+                    border: "1px solid rgba(255, 255, 255, 0.5)",
+                    boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 2px 8px rgba(0,0,0,0.04)",
+                  }}
+                >
+                  <img src="/logo.png" alt="RCP Logo" className="h-7 w-7 rounded-lg object-contain" />
+                </div>
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider"
+                  style={{
+                    background: "rgba(16, 185, 129, 0.12)",
+                    color: "#059669",
+                    backdropFilter: "blur(12px)",
+                    border: "1px solid rgba(16, 185, 129, 0.2)",
+                  }}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Live Operations
+                </span>
+              </div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                {tenantName}
+              </h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Real-time coordination dashboard — relief operations command center
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Low Stock Threshold Warning Banner */}
       {lowStockItems.length > 0 && (
