@@ -47,7 +47,7 @@ export function StatCard({
 }) {
   const a = ACCENTS[accent];
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-card">
+    <div className="glass-stat rounded-2xl border border-border bg-surface p-5 shadow-card">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
         <div

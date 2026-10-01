@@ -16,14 +16,14 @@ type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    "bg-coral-500 text-white shadow-xs hover:bg-coral-600 active:bg-coral-700",
+    "glass-btn-primary bg-coral-500 text-white shadow-xs hover:bg-coral-600 active:bg-coral-700",
   secondary:
-    "bg-slate-900 text-white shadow-sm hover:bg-slate-800 active:bg-slate-950",
+    "glass-btn-secondary bg-slate-900 text-white shadow-sm hover:bg-slate-800 active:bg-slate-950",
   outline:
-    "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900",
-  ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-  danger: "bg-red-600 text-white shadow-sm hover:bg-red-700 active:bg-red-800",
-  subtle: "bg-coral-50 text-coral-800 hover:bg-coral-100",
+    "glass-btn-outline border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900",
+  ghost: "glass-btn-ghost text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+  danger: "glass-btn-danger bg-red-600 text-white shadow-sm hover:bg-red-700 active:bg-red-800",
+  subtle: "glass-btn-subtle bg-coral-50 text-coral-800 hover:bg-coral-100",
 };
 
 const BUTTON_SIZES: Record<ButtonSize, string> = {
@@ -78,7 +78,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border bg-surface shadow-card",
+        "glass-card rounded-2xl border border-border bg-surface shadow-card",
         className,
       )}
       {...props}
@@ -100,7 +100,7 @@ export function CardHeader({
   return (
     <div
       className={cn(
-        "flex items-start justify-between gap-4 rounded-t-2xl border-b border-coral-200/70 bg-gradient-to-r from-coral-50/80 to-surface px-5 py-4",
+        "glass-card-header flex items-start justify-between gap-4 rounded-t-2xl border-b border-coral-200/70 bg-gradient-to-r from-coral-50/80 to-surface px-5 py-4",
         className,
       )}
     >
@@ -158,7 +158,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
+        "glass-badge inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
         BADGE_TONES[tone],
         className,
       )}
@@ -179,7 +179,7 @@ export const Input = forwardRef<
   <input
     ref={ref}
     className={cn(
-      "focus-ring h-10 w-full rounded-lg border border-input bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50",
+      "glass-input focus-ring h-10 w-full rounded-lg border border-input bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50",
       className,
     )}
     {...props}
@@ -194,7 +194,7 @@ export const Textarea = forwardRef<
   <textarea
     ref={ref}
     className={cn(
-      "focus-ring min-h-[80px] w-full rounded-lg border border-input bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400",
+      "glass-input focus-ring min-h-[80px] w-full rounded-lg border border-input bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400",
       className,
     )}
     {...props}
@@ -209,7 +209,7 @@ export const Select = forwardRef<
   <select
     ref={ref}
     className={cn(
-      "select-caret focus-ring h-10 w-full appearance-none rounded-lg border border-input bg-white px-3 pr-9 text-sm text-slate-900",
+      "glass-input select-caret focus-ring h-10 w-full appearance-none rounded-lg border border-input bg-white px-3 pr-9 text-sm text-slate-900",
       className,
     )}
     {...props}

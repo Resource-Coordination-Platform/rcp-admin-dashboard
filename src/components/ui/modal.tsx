@@ -54,7 +54,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         className={cn(
-          "relative z-[1001] flex max-h-[72vh] w-full flex-col overflow-hidden animate-scale-in rounded-2xl bg-surface shadow-elevated",
+          "glass-modal relative z-[1001] flex max-h-[72vh] w-full flex-col overflow-hidden animate-scale-in rounded-2xl bg-surface shadow-elevated",
           sizes[size],
         )}
       >

@@ -10,7 +10,7 @@ export function Table({
   className?: string;
 }) {
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="glass-table w-full overflow-x-auto">
       <table className={cn("w-full border-collapse text-sm", className)}>
         {children}
       </table>

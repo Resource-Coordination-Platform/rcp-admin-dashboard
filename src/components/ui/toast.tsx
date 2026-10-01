@@ -94,7 +94,7 @@ function ToastCard({ toast, onDone }: { toast: Toast; onDone: () => void }) {
   return (
     <div
       className={cn(
-        "pointer-events-auto flex animate-fade-in items-start gap-3 rounded-xl border p-4 shadow-elevated",
+        "glass-toast pointer-events-auto flex animate-fade-in items-start gap-3 rounded-xl border p-4 shadow-elevated",
         STYLES[toast.variant],
       )}
       role="status"
