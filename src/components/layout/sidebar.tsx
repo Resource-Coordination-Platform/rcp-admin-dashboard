@@ -74,21 +74,21 @@ export function Sidebar({
                 href={item.href}
                 onClick={onClose}
                 className={cn(
-                  "group flex items-center gap-3 rounded-xl px-3 py-3 text-base font-medium transition-colors",
+                  "liquid-glass group flex items-center gap-3 rounded-xl px-3 py-3 text-base font-medium transition-colors",
                   active
-                    ? "bg-coral-500 text-white shadow-md shadow-coral-500/20"
-                    : "text-slate-300 hover:bg-sidebar-hover hover:text-white",
+                    ? "liquid-glass-active text-white"
+                    : "text-slate-300 hover:text-white",
                 )}
               >
                 <Icon
                   className={cn(
-                    "h-5 w-5 shrink-0",
+                    "relative z-10 h-5 w-5 shrink-0",
                     active
                       ? "text-white"
                       : "text-slate-400 group-hover:text-white",
                   )}
                 />
-                <span className="flex-1">{item.label}</span>
+                <span className="relative z-10 flex-1">{item.label}</span>
               </Link>
             );
           })}

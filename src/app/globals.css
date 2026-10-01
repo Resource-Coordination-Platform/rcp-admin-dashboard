@@ -99,3 +99,152 @@ body {
     0 0 0 2px hsl(var(--surface)),
     0 0 0 4px hsl(var(--ring));
 }
+
+/* ── Liquid Glass Effect ── */
+
+/* Base glass surface for all sidebar nav items */
+.liquid-glass {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.01) 50%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  transition:
+    background 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+/* Inner light refraction highlight */
+.liquid-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    transparent 40%,
+    transparent 60%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+/* Slow shimmer sweep */
+.liquid-glass::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.06),
+    transparent
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+/* Hover state */
+.liquid-glass:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(255, 255, 255, 0.09) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 0 20px rgba(255, 255, 255, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.liquid-glass:hover::before {
+  opacity: 1;
+}
+
+.liquid-glass:hover::after {
+  opacity: 1;
+  animation: liquid-shimmer 1.8s ease-in-out;
+}
+
+/* Active / selected liquid glass */
+.liquid-glass-active {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(233, 125, 77, 0.65) 0%,
+    rgba(233, 125, 77, 0.45) 40%,
+    rgba(247, 155, 114, 0.55) 100%
+  ) !important;
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow:
+    0 4px 24px rgba(233, 125, 77, 0.25),
+    0 0 40px rgba(233, 125, 77, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+/* Persistent top-edge light for active item */
+.liquid-glass-active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    transparent 35%
+  );
+  pointer-events: none;
+}
+
+/* Continuous subtle shimmer on active item */
+.liquid-glass-active::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  pointer-events: none;
+  animation: liquid-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes liquid-shimmer {
+  0% {
+    left: -60%;
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    left: 120%;
+    opacity: 0;
+  }
+}
