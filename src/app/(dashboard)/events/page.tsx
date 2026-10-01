@@ -28,14 +28,12 @@ import {
   Users,
   Waves,
   X,
-  XCircle,
 } from "lucide-react";
 import {
   useCloseEvent,
   useDeclareEvent,
   useDistricts,
   useEvents,
-  useUpdateReportStatus,
   useVolunteerReports,
 } from "@/lib/hooks";
 import { BROADCAST_META, SRI_LANKA_DISTRICTS } from "@/lib/constants";
@@ -149,10 +147,6 @@ export default function EventsPage() {
     });
   }, [events, eventStatusTab, eventSearch]);
 
-  const pendingReportsCount = useMemo(() => {
-    return (reports ?? []).filter((r) => r.status === "PENDING").length;
-  }, [reports]);
-
   const activeEventsCount = useMemo(() => {
     return (events ?? []).filter((e) => e.status !== "CLOSED").length;
   }, [events]);
@@ -194,7 +188,7 @@ export default function EventsPage() {
             {reportsLoading ? "..." : (reports ?? []).length}
           </p>
           <p className="mt-0.5 text-xs text-amber-700 font-medium">
-            {pendingReportsCount} awaiting verification
+            {reports?.length ?? 0} GN-verified reports
           </p>
         </Card>
 
@@ -256,11 +250,7 @@ export default function EventsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {pendingReportsCount > 0 && (
-                  <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-300">
-                    {pendingReportsCount} Pending
-                  </span>
-                )}
+
                 <Button
                   size="sm"
                   variant="outline"
@@ -275,7 +265,7 @@ export default function EventsPage() {
             {/* Filter Tabs & Search */}
             <div className="mt-3.5 flex flex-wrap items-center gap-2 border-t border-coral-200/60 pt-3">
               <div className="inline-flex rounded-lg bg-surface p-1 shadow-xs ring-1 ring-border">
-                {(["ALL", "PENDING", "VERIFIED", "REJECTED"] as const).map((tab) => (
+                {(["ALL", "VERIFIED"] as const).map((tab) => (
                   <button
                     key={tab}
                     type="button"
@@ -287,7 +277,7 @@ export default function EventsPage() {
                         : "text-slate-600 hover:text-slate-900")
                     }
                   >
-                    {tab === "ALL" ? "All" : tab === "PENDING" ? "Pending" : tab === "VERIFIED" ? "Verified" : "Rejected"}
+                    {tab === "ALL" ? "All" : "GN verified"}
                   </button>
                 ))}
               </div>
@@ -319,7 +309,7 @@ export default function EventsPage() {
                 description={
                   reportStatusTab !== "ALL" || reportSearch
                     ? "Try adjusting your filter or search query."
-                    : "No ground reports submitted yet. When volunteers report events through the mobile app, they will appear here in real-time."
+                    : "Reports appear here after verification by the Grama Niladhari responsible for the reported location."
                 }
               />
             </Card>
@@ -417,7 +407,7 @@ export default function EventsPage() {
                 description={
                   eventStatusTab !== "ALL" || eventSearch
                     ? "No events match your current filter."
-                    : "No disaster response events have been declared yet. Click 'Declare Event' or verify an incoming volunteer report on the left to initiate a broadcast."
+                    : "No disaster response events have been declared yet. Click 'Declare Event' or use a GN-verified volunteer report on the left to initiate a broadcast."
                 }
                 action={
                   <Button onClick={handleOpenDeclareManual}>
@@ -488,26 +478,6 @@ function VolunteerReportCard({
   onDeclareEvent: () => void;
   onViewImage: (url: string) => void;
 }) {
-  const toast = useToast();
-  const updateStatus = useUpdateReportStatus();
-
-  async function handleStatusChange(nextStatus: "VERIFIED" | "REJECTED") {
-    try {
-      await updateStatus.mutateAsync({
-        reportId: report.id,
-        status: nextStatus,
-      });
-      toast.success(
-        nextStatus === "VERIFIED" ? "Report Verified" : "Report Dismissed",
-        nextStatus === "VERIFIED"
-          ? "This report has been marked as verified by ground staff."
-          : "Report status updated to dismissed.",
-      );
-    } catch {
-      toast.error("Failed to update status", "Please check your network and try again.");
-    }
-  }
-
   const categoryLower = report.category.toLowerCase();
   const CategoryIcon =
     categoryLower.includes("flood") || categoryLower.includes("ජල")
@@ -620,28 +590,6 @@ function VolunteerReportCard({
 
       {/* Actions */}
       <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-2.5">
-        {report.status === "PENDING" && (
-          <>
-            <Button
-              size="sm"
-              variant="outline"
-              loading={updateStatus.isPending}
-              onClick={() => handleStatusChange("REJECTED")}
-              className="h-7 text-xs text-slate-600 hover:text-red-600"
-            >
-              <XCircle className="h-3 w-3" /> Dismiss
-            </Button>
-            <Button
-              size="sm"
-              variant="subtle"
-              loading={updateStatus.isPending}
-              onClick={() => handleStatusChange("VERIFIED")}
-              className="h-7 text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100"
-            >
-              <CheckCircle2 className="h-3 w-3" /> Verify
-            </Button>
-          </>
-        )}
 
         <Button
           size="sm"

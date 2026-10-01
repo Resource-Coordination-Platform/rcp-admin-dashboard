@@ -89,7 +89,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'linear-gradient(135deg, #f0fdf9 0%, #e8f5f1 25%, #f5f3ff 50%, #fff1eb 75%, #f0fdf9 100%)' }}>
+    <div className="flex min-h-screen" style={{ background: 'linear-gradient(135deg, #fff7f2 0%, #ffe8d9 25%, #fff1eb 50%, #ffecd6 75%, #fff5ee 100%)' }}>
       {/* Left: brand / value panel */}
       <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-sidebar p-12 text-white lg:flex">
         <div
