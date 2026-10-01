@@ -34,7 +34,7 @@ export function Sidebar({
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-sidebar text-slate-100 transition-transform lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col glass-dark text-slate-100 transition-transform lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -74,10 +74,10 @@ export function Sidebar({
                 href={item.href}
                 onClick={onClose}
                 className={cn(
-                  "group flex items-center gap-3 rounded-xl px-3 py-3 text-base font-medium transition-colors",
+                  "group relative z-10 flex items-center gap-3 rounded-xl px-3 py-3 text-base font-medium transition-all duration-200",
                   active
-                    ? "bg-coral-500 text-white shadow-md shadow-coral-500/20"
-                    : "text-slate-300 hover:bg-sidebar-hover hover:text-white",
+                    ? "bg-coral-500/90 text-white shadow-lg shadow-coral-500/25 backdrop-blur-sm ring-1 ring-inset ring-white/20"
+                    : "text-slate-300 hover:bg-white/8 hover:text-white hover:shadow-glass-inner",
                 )}
               >
                 <Icon

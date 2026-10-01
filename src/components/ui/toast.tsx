@@ -36,10 +36,10 @@ const ICONS = {
 };
 
 const STYLES: Record<ToastVariant, string> = {
-  success: "border-emerald-200 bg-emerald-50 text-emerald-900",
-  error: "border-red-200 bg-red-50 text-red-900",
-  info: "border-brand-200 bg-brand-50 text-brand-900",
-  warning: "border-amber-200 bg-amber-50 text-amber-900",
+  success: "border-emerald-200/60 bg-emerald-50/70 text-emerald-900 backdrop-blur-xl",
+  error: "border-red-200/60 bg-red-50/70 text-red-900 backdrop-blur-xl",
+  info: "border-brand-200/60 bg-brand-50/70 text-brand-900 backdrop-blur-xl",
+  warning: "border-amber-200/60 bg-amber-50/70 text-amber-900 backdrop-blur-xl",
 };
 
 const ICON_STYLES: Record<ToastVariant, string> = {
