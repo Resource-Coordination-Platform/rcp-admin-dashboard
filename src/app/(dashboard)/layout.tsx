@@ -36,7 +36,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #f0fdf9 0%, #e8f5f1 20%, #f5f3ff 45%, #fff1eb 70%, #f0fdf9 100%)' }}>
       <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       <div className="lg:pl-64">
         <Topbar onMenu={() => setMobileOpen(true)} />

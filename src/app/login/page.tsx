@@ -89,7 +89,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen" style={{ background: 'linear-gradient(135deg, #f0fdf9 0%, #e8f5f1 25%, #f5f3ff 50%, #fff1eb 75%, #f0fdf9 100%)' }}>
       {/* Left: brand / value panel */}
       <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-sidebar p-12 text-white lg:flex">
         <div
@@ -142,8 +142,8 @@ export default function LoginPage() {
       </div>
 
       {/* Right: form */}
-      <div className="flex w-full items-center justify-center bg-background px-6 py-12 lg:w-1/2">
-        <div className="w-full max-w-sm">
+      <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2" style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(40px) saturate(1.8)', WebkitBackdropFilter: 'blur(40px) saturate(1.8)' }}>
+        <div className="glass-card w-full max-w-sm rounded-2xl p-8">
           {/* Brand header */}
           <div className="mb-6 flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 p-1.5 ring-1 ring-brand-200 shadow-sm">
@@ -164,7 +164,7 @@ export default function LoginPage() {
 
           {/* Dynamic Branding Display **/}
           {tenantInfo && (
-            <div className="mt-6 flex items-center gap-3 rounded-xl border border-brand-200 bg-brand-50/50 p-3 transition-all">
+            <div className="glass-card mt-6 flex items-center gap-3 rounded-xl border border-brand-200 p-3 transition-all">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white font-bold">
                 <Building2 className="h-5 w-5" />
               </div>
@@ -212,7 +212,7 @@ export default function LoginPage() {
             {error && (
               <div
                 className={
-                  "rounded-xl border p-3.5 text-sm flex items-start gap-2.5 shadow-sm " +
+                  "glass-toast rounded-xl border p-3.5 text-sm flex items-start gap-2.5 shadow-sm " +
                   (errorCode === "TENANT_SUSPENDED"
                     ? "border-amber-300 bg-amber-50 text-amber-900"
                     : errorCode === "USER_DISABLED"
