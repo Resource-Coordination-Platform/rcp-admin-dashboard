@@ -6,10 +6,12 @@ export type UserType =
   | "VICTIM"
   | "DONATOR"
   | "TENANT_ADMIN"
+  | "GRAMA_NILADHARI"
   | "COORDINATOR";
 
 export type Role =
   | "tenant_admin"
+  | "grama_niladhari"
   | "coordinator"
   | "volunteer"
   | "victim"
@@ -37,6 +39,7 @@ export interface JwtClaims {
 }
 
 export interface UserRead {
+  gn_division_name?: string | null;
   id: string;
   tenant_id: string | null;
   user_type: UserType;

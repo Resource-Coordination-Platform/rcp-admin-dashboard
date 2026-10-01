@@ -27,7 +27,7 @@ describe('Help Requests workflow', () => {
   it('shows requested quantities, delivery and both confirmations in one request', () => {
     render(<RequestsPage />);
     expect(screen.getByText('Help Requests')).toBeInTheDocument();
-    expect(screen.getByText('Meals: 10 packs')).toBeInTheDocument();
+    expect(screen.getByText('Meals').parentElement).toHaveTextContent(/Meals\s*10 packs/);
     expect(screen.getByText('Awaiting centre collection')).toBeInTheDocument();
     expect(screen.getByText(/Victim confirmed/)).toBeInTheDocument();
     expect(screen.getByText(/Volunteer confirmed/)).toBeInTheDocument();

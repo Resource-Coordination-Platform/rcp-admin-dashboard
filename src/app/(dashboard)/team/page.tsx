@@ -35,10 +35,12 @@ import {
 } from "@/components/ui/primitives";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
+import { AddGNModal } from "@/components/features/add-gn-modal";
 
 export default function TeamPage() {
   const { profile, hasRole } = useAuth();
   const [open, setOpen] = useState(false);
+  const [gnOpen, setGnOpen] = useState(false);
   const [editUser, setEditUser] = useState<UserRead | null>(null);
   const [accessUser, setAccessUser] = useState<UserRead | null>(null);
   const { data: coordinators, isLoading, isError, refetch } = useCoordinators();
@@ -52,13 +54,13 @@ export default function TeamPage() {
     <div>
       <PageHeader
         title="Team"
-        description="View your tenant admins and coordinators. Hold or restore their access when needed."
+        description="Manage tenant admins, coordinators and Grama Niladhari officers."
         actions={
           isAdmin ? (
-            <Button onClick={() => setOpen(true)} disabled={!profile?.tenantSlug}>
+            <div className="flex gap-2"><Button variant="outline" onClick={() => setGnOpen(true)}>Add Grama Niladhari</Button><Button onClick={() => setOpen(true)} disabled={!profile?.tenantSlug}>
               <UserPlus className="h-4 w-4" />
               Add coordinator
-            </Button>
+            </Button></div>
           ) : undefined
         }
       />
@@ -158,7 +160,7 @@ export default function TeamPage() {
                 <div className="flex flex-col items-end gap-2 text-right">
                   <div className="flex items-center gap-2">
                     <Badge tone={u.user_type === "TENANT_ADMIN" ? "brand" : "purple"}>
-                      {u.user_type === "TENANT_ADMIN" ? "Admin" : "Coordinator"}
+                      {u.user_type === "TENANT_ADMIN" ? "Admin" : u.user_type === "GRAMA_NILADHARI" ? "Grama Niladhari" : "Coordinator"}
                     </Badge>
                     <Badge tone={u.status === "active" ? "success" : "warning"}>{u.status === "active" ? "Active" : u.status === "disabled" ? "On hold" : u.status}</Badge>
                     {isAdmin && profile?.id !== u.id && u.status !== "banned" && (
@@ -182,6 +184,7 @@ export default function TeamPage() {
                     )}
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
+                    {u.gn_division_name && <span className="block">GN division: {u.gn_division_name}</span>}
                     Joined {relativeTime(u.created_at)}
                   </p>
                 </div>
@@ -191,6 +194,7 @@ export default function TeamPage() {
         )}
       </Card>
 
+      {gnOpen && <AddGNModal onClose={() => { setGnOpen(false); void refetch(); }} />}
       {open && profile?.tenantSlug && (
         <AddCoordinatorModal
           tenantSlug={profile.tenantSlug}
