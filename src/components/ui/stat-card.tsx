@@ -47,12 +47,12 @@ export function StatCard({
 }) {
   const a = ACCENTS[accent];
   return (
-    <div className="glass-card rounded-2xl p-5">
-      <div className="relative z-10 flex items-center justify-between">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-card">
+      <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
         <div
           className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-xl ring-1 ring-inset backdrop-blur-sm",
+            "flex h-9 w-9 items-center justify-center rounded-xl ring-1 ring-inset",
             a.bg,
             a.fg,
             a.ring,
@@ -62,14 +62,14 @@ export function StatCard({
         </div>
       </div>
       {loading ? (
-        <Skeleton className="relative z-10 mt-3 h-8 w-20" />
+        <Skeleton className="mt-3 h-8 w-20" />
       ) : (
-        <p className="relative z-10 mt-2 text-3xl font-semibold tracking-tight text-slate-900">
+        <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
           {value}
         </p>
       )}
       {hint && !loading && (
-        <p className="relative z-10 mt-1 text-xs text-muted-foreground">{hint}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
       )}
     </div>
   );

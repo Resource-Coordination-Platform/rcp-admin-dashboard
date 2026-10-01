@@ -63,12 +63,6 @@ const config: Config = {
         card: "0 1px 2px 0 rgba(11,114,97,0.04), 0 1px 3px 0 rgba(11,114,97,0.06)",
         elevated:
           "0 10px 30px -12px rgba(11,114,97,0.18), 0 4px 8px -4px rgba(11,114,97,0.08)",
-        glass:
-          "0 8px 32px rgba(11,114,97,0.08), 0 2px 8px rgba(0,0,0,0.04)",
-        "glass-lg":
-          "0 16px 48px rgba(11,114,97,0.12), 0 4px 16px rgba(0,0,0,0.06)",
-        "glass-inner":
-          "inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.04)",
       },
       fontFamily: {
         sans: ["var(--font-inter)", "var(--font-sans)", "'Inter'", "system-ui", "-apple-system", "sans-serif"],
@@ -85,22 +79,10 @@ const config: Config = {
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
-        "orb-float": {
-          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
-          "25%": { transform: "translate(30px, -20px) scale(1.05)" },
-          "50%": { transform: "translate(-20px, 30px) scale(0.95)" },
-          "75%": { transform: "translate(15px, 15px) scale(1.02)" },
-        },
-        "glass-shimmer": {
-          "0%": { backgroundPosition: "-200% center" },
-          "100%": { backgroundPosition: "200% center" },
-        },
       },
       animation: {
         "fade-in": "fade-in 0.25s ease-out",
         "scale-in": "scale-in 0.15s ease-out",
-        "orb-float": "orb-float 20s ease-in-out infinite",
-        "glass-shimmer": "glass-shimmer 6s ease-in-out infinite",
       },
     },
   },

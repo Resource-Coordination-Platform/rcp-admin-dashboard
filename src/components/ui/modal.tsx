@@ -47,14 +47,14 @@ export function Modal({
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
       <div
-        className="absolute inset-0 z-[1000] bg-slate-900/30 backdrop-blur-md"
+        className="absolute inset-0 z-[1000] bg-slate-900/40 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
         role="dialog"
         aria-modal="true"
         className={cn(
-          "glass relative z-[1001] flex max-h-[72vh] w-full flex-col overflow-hidden animate-scale-in rounded-2xl shadow-glass-lg",
+          "relative z-[1001] flex max-h-[72vh] w-full flex-col overflow-hidden animate-scale-in rounded-2xl bg-surface shadow-elevated",
           sizes[size],
         )}
       >

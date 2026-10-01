@@ -36,7 +36,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
     : (claims?.roles[0] ?? "member");
 
   return (
-    <header className="glass sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-white/20 px-4 lg:px-8">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-coral-200/60 bg-surface/95 px-4 backdrop-blur lg:px-8">
       <button
         onClick={onMenu}
         className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
@@ -56,7 +56,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="hidden items-center gap-1.5 rounded-full bg-emerald-50/70 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200/60 glass-badge sm:flex">
+        <div className="hidden items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200 sm:flex">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           Live
         </div>
@@ -87,7 +87,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
                 aria-hidden
                 onClick={() => setMenuOpen(false)} // close menu when clicking outside
               />
-              <div className="glass absolute right-0 top-full z-40 mt-2 w-60 animate-scale-in rounded-xl p-1.5 shadow-glass-lg">
+              <div className="absolute right-0 top-full z-40 mt-2 w-60 animate-scale-in rounded-xl border border-border bg-surface p-1.5 shadow-elevated">
                 <div className="border-b border-border px-3 py-2.5">
                   <p className="text-sm font-medium text-slate-900">{email}</p>
                   <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">

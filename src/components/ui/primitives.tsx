@@ -78,7 +78,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "glass-card rounded-2xl",
+        "rounded-2xl border border-border bg-surface shadow-card",
         className,
       )}
       {...props}
@@ -100,7 +100,7 @@ export function CardHeader({
   return (
     <div
       className={cn(
-        "relative z-10 flex items-start justify-between gap-4 rounded-t-2xl border-b border-white/30 bg-gradient-to-r from-coral-50/60 via-white/40 to-brand-50/30 px-5 py-4 backdrop-blur-sm",
+        "flex items-start justify-between gap-4 rounded-t-2xl border-b border-coral-200/70 bg-gradient-to-r from-coral-50/80 to-surface px-5 py-4",
         className,
       )}
     >
@@ -158,7 +158,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "glass-badge inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
         BADGE_TONES[tone],
         className,
       )}
@@ -284,7 +284,7 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/50 text-slate-400 shadow-glass ring-1 ring-inset ring-white/40 backdrop-blur-sm">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
         <Icon className="h-7 w-7" />
       </div>
       <h3 className="mt-4 text-sm font-semibold text-slate-900">{title}</h3>
